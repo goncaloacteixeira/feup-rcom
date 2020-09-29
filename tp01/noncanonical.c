@@ -13,30 +13,29 @@
 
 volatile int STOP=FALSE;
 
-int main(int argc, char** argv)
-{
-    int fd,c, res;
+int main(int argc, char** argv) {
+    int fd, c, res;
     struct termios oldtio,newtio;
     char buf[255];
 
-    if ( (argc < 2) || 
-  	     ((strcmp("/dev/ttyS0", argv[1])!=0) && 
+    if ( (argc < 2) ||
+  	     ((strcmp("/dev/ttyS0", argv[1])!=0) &&
   	      (strcmp("/dev/ttyS1", argv[1])!=0) )) {
       printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS1\n");
       exit(1);
     }
 
+    /*
+      Open serial port device for reading and writing and not as controlling tty
+      because we don't want to get killed if linenoise sends CTRL-C.
+    */
 
-  /*
-    Open serial port device for reading and writing and not as controlling tty
-    because we don't want to get killed if linenoise sends CTRL-C.
-  */
-  
-    
     fd = open(argv[1], O_RDWR | O_NOCTTY );
-    if (fd <0) {perror(argv[1]); exit(-1); }
+    if (fd <0) {
+      perror(argv[1]); exit(-1);
+    }
 
-    if ( tcgetattr(fd,&oldtio) == -1) { /* save current port settings */
+    if (tcgetattr(fd, &oldtio) == -1) { /* save current port settings */
       perror("tcgetattr");
       exit(-1);
     }
@@ -52,18 +51,14 @@ int main(int argc, char** argv)
     newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
     newtio.c_cc[VMIN]     = 5;   /* blocking read until 5 chars received */
 
-
-
-  /* 
-    VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a 
-    leitura do(s) próximo(s) caracter(es)
-  */
-
-
+    /*
+      VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a
+      leitura do(s) proximo(s) caracter(es)
+    */
 
     tcflush(fd, TCIOFLUSH);
 
-    if ( tcsetattr(fd,TCSANOW,&newtio) == -1) {
+    if (tcsetattr(fd, TCSANOW, &newtio) == -1) {
       perror("tcsetattr");
       exit(-1);
     }
@@ -71,20 +66,16 @@ int main(int argc, char** argv)
     printf("New termios structure set\n");
 
 
-    while (STOP==FALSE) {       /* loop for input */
+    while (STOP == FALSE) {       /* loop for input */
       res = read(fd,buf,255);   /* returns after 5 chars have been input */
       buf[res]=0;               /* so we can printf... */
       printf(":%s:%d\n", buf, res);
       if (buf[0]=='z') STOP=TRUE;
     }
 
-
-
-  /* 
-    O ciclo WHILE deve ser alterado de modo a respeitar o indicado no guião 
-  */
-
-
+    /*
+      O ciclo WHILE deve ser alterado de modo a respeitar o indicado no guiï¿½o
+    */
 
     tcsetattr(fd,TCSANOW,&oldtio);
     close(fd);
