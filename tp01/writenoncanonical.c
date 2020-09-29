@@ -5,6 +5,9 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 #define BAUDRATE B38400
 #define MODEMDEVICE "/dev/ttyS1"
@@ -67,24 +70,14 @@ int main(int argc, char** argv) {
 
     printf("New termios structure set\n");
 
-    /*
-    for (i = 0; i < 255; i++) {
-      buf[i] = 'a';
-    }
-    */
-
     printf("Input: ");
-    int chars = gets(buf);
+    fgets(buf, 255, stdin);
 
-    res = write(fd, buf, 255);
+    buf[strlen(buf)] = '\0';
+    res = write(fd, buf, strlen(buf));
     printf("%d bytes written\n", res);
 
-    /*
-      O ciclo FOR e as instru��es seguintes devem ser alterados de modo a respeitar
-      o indicado no gui�o
-    */
-
-    if ( tcsetattr(fd,TCSANOW,&oldtio) == -1) {
+    if (tcsetattr(fd, TCSANOW, &oldtio) == -1) {
       perror("tcsetattr");
       exit(-1);
     }
