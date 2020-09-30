@@ -24,8 +24,8 @@ int main(int argc, char** argv) {
     int i, sum = 0, speed = 0;
 
     if ( (argc < 2) ||
-  	     ((strcmp("/dev/ttyS0", argv[1])!=0) &&
-  	      (strcmp("/dev/ttyS1", argv[1])!=0) )) {
+  	     ((strcmp("/dev/ttyS10", argv[1])!=0) &&
+  	      (strcmp("/dev/ttyS11", argv[1])!=0) )) {
       printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS1\n");
       exit(1);
     }
@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
     newtio.c_lflag = 0;
 
     newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
-    newtio.c_cc[VMIN]     = 5;   /* blocking read until 5 chars received */
+    newtio.c_cc[VMIN]     = 1;   /* blocking read until 5 chars received */
 
     /*
       VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a
@@ -76,6 +76,10 @@ int main(int argc, char** argv) {
     buf[strlen(buf)] = '\0';
     res = write(fd, buf, strlen(buf));
     printf("%d bytes written\n", res);
+
+    char replyBuf[255];
+    res = read(fd,replyBuf,255);
+    printf("Message received: %s\n", replyBuf);
 
     if (tcsetattr(fd, TCSANOW, &oldtio) == -1) {
       perror("tcsetattr");
