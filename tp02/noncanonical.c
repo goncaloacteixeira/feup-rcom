@@ -1,29 +1,86 @@
 /*Non-Canonical Input Processing*/
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <termios.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-
-#define BAUDRATE B38400
-#define _POSIX_SOURCE 1 /* POSIX compliant source */
-#define FALSE 0
-#define TRUE 1
+#include "macros.h"
 
 volatile int STOP=FALSE;
 
+int readMsg(int fd, unsigned char msg) {
+  int part=0;
+  unsigned char rcv_msg;
+  printf("Reading...\n");
+  while (part!=5) {
+
+    read(fd,&rcv_msg,1);
+    switch (part) {
+      case 0:
+        if(rcv_msg==FLAG){
+          part=1;
+          printf("FLAG: %c\n",rcv_msg);
+        }
+        break;
+      case 1:
+        if(rcv_msg==A){
+          part=2;
+          printf("A: %c\n",rcv_msg);
+        }
+        else {
+          if(rcv_msg==FLAG)
+            part=1;
+          else
+            part=0;
+        }
+        break;
+      case 2:
+        if(rcv_msg==msg){
+          part=3;
+          printf("Control: %c\n",rcv_msg);
+        }
+        else
+          part=0;
+        break;
+      case 3:
+        if(rcv_msg==(A^msg)){
+          part=4;
+          printf("Control BCC: %c\n",rcv_msg);
+        }
+        else
+          part=0;
+        break;
+      case 4:
+        if(rcv_msg==FLAG) {
+          part = 5;
+          printf("FINAL FLAG: %c\nReceived Control\n",rcv_msg);
+        }
+        else
+          part=0;
+        break;
+      default:
+        break;
+    }
+  }
+  
+  return TRUE;
+}
+
+void resendMsg(int fd, unsigned char msg) {
+  printf("Resending...\n");
+  unsigned char mesh[5];
+  mesh[0]=FLAG;
+  mesh[1]=A;
+  mesh[2]=msg;
+  mesh[3]=mesh[1]^mesh[2];
+  mesh[4]=FLAG;
+  write(fd,mesh,5);
+}
+
 int main(int argc, char** argv) {
-  int fd, c, res;
+  int fd;
   struct termios oldtio,newtio;
-  char buf[255];
 
   if ( (argc < 2) ||
         ((strcmp("/dev/ttyS0", argv[1])!=0) &&
-        (strcmp("/dev/ttyS1", argv[1])!=0) ) && (strcmp("/dev/ttyS10",argv[1]!=0)) && (strcmp("/dev/ttyS11",argv[1]!=0))) {
+        (strcmp("/dev/ttyS1", argv[1])!=0)  && 
+        (strcmp("/dev/ttyS10",argv[1])!=0) && 
+        (strcmp("/dev/ttyS11",argv[1])!=0))) {
     printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS11\n");
     exit(1);
   }
@@ -51,8 +108,8 @@ int main(int argc, char** argv) {
   /* set input mode (non-canonical, no echo,...) */
   newtio.c_lflag = 0;
 
-  newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
-  newtio.c_cc[VMIN]     = 1;   /* blocking read until 1 chars received */
+  newtio.c_cc[VTIME]    = 1;   /* inter-character timer unused */
+  newtio.c_cc[VMIN]     = 0;   /* blocking read until 1 chars received */
 
   /*
     VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a
@@ -68,33 +125,13 @@ int main(int argc, char** argv) {
 
   printf("New termios structure set\n");
 
-  char replyBuf[255]; //To save received string
-  int i=0;
-  while (STOP == FALSE) {       /* loop for input */
-    res = read(fd,buf,1);   /* returns after 1 chars have been input */
-    // printf("%x\n", buf[0]);
-    buf[res]=0;               /* so we can printf... */
-    if (buf[0]=='\0') {STOP=TRUE; break;}
-    printf("%s\n", buf);
-    replyBuf[i]=buf[0];
-    i++;
-  }
-  replyBuf[strlen(replyBuf)]='\0';
-  /*
-    O ciclo WHILE deve ser alterado de modo a respeitar o indicado no gui�o
-  */
-  printf("Sending: %s, %d bytes\n",replyBuf, strlen(replyBuf));
-	
-  res = write(fd, replyBuf, strlen(replyBuf)+1);
-  printf("%d bytes written\n", res);
+  if(readMsg(fd,SET))
+    resendMsg(fd,UA);
 
   if(tcsetattr(fd,TCSANOW,&oldtio)==-1){
     perror("tsetattr");
     exit(-1);
   }
   close(fd);
-
-
-
   return 0;
 }
