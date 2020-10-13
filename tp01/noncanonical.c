@@ -22,8 +22,8 @@ int main(int argc, char** argv) {
   char buf[255];
 
   if ( (argc < 2) ||
-        ((strcmp("/dev/ttyS10", argv[1])!=0) &&
-        (strcmp("/dev/ttyS11", argv[1])!=0) )) {
+        ((strcmp("/dev/ttyS0", argv[1])!=0) &&
+        (strcmp("/dev/ttyS1", argv[1])!=0) ) && (strcmp("/dev/ttyS10",argv[1]!=0)) && (strcmp("/dev/ttyS11",argv[1]!=0))) {
     printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS11\n");
     exit(1);
   }
@@ -72,8 +72,9 @@ int main(int argc, char** argv) {
   int i=0;
   while (STOP == FALSE) {       /* loop for input */
     res = read(fd,buf,1);   /* returns after 1 chars have been input */
+    // printf("%x\n", buf[0]);
     buf[res]=0;               /* so we can printf... */
-    if (buf[0]=='\n') {STOP=TRUE; continue;}
+    if (buf[0]=='\0') {STOP=TRUE; break;}
     printf("%s\n", buf);
     replyBuf[i]=buf[0];
     i++;
@@ -82,8 +83,9 @@ int main(int argc, char** argv) {
   /*
     O ciclo WHILE deve ser alterado de modo a respeitar o indicado no gui�o
   */
-  printf("Sending: %s\n",replyBuf);
-  res = write(fd, replyBuf, strlen(replyBuf));
+  printf("Sending: %s, %d bytes\n",replyBuf, strlen(replyBuf));
+	
+  res = write(fd, replyBuf, strlen(replyBuf)+1);
   printf("%d bytes written\n", res);
 
   if(tcsetattr(fd,TCSANOW,&oldtio)==-1){
