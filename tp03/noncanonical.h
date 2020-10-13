@@ -5,4 +5,8 @@
  * @param port Serial Port to be read
  *
  */
-int reader_main(char* port);
+int receive_set(int fd);
+
+int open_reader(char* port);
+
+int close_reader(int fd);

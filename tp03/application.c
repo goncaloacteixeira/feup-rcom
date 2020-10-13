@@ -7,7 +7,7 @@ int llopen(int port, int type) {
   if (type == TRANSMITTER)
     return open_writer(file);
   else if (type == RECEIVER)
-    return 0; /* todo - substituir por open_reader quando o ´noncanonical` estiver pronto */
+    return open_reader(file);
 
   return -1;
 }

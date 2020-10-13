@@ -1,9 +1,11 @@
 /*Non-Canonical Input Processing*/
 #include "noncanonical.h"
 
-int reader_main(char* port) {
+static struct termios oldtio;
+static struct termios newtio;
+
+int open_reader(char* port) {
   int fd;
-  struct termios oldtio,newtio;
 
   /* top layer does the verification of the port name */
 
@@ -14,12 +16,13 @@ int reader_main(char* port) {
 
   fd = open(port, O_RDWR | O_NOCTTY );
   if (fd <0) {
-    perror(port); exit(-1);
+    perror(port);
+    return -1;
   }
 
   if (tcgetattr(fd, &oldtio) == -1) { /* save current port settings */
     perror("tcgetattr");
-    exit(-1);
+    return -1;
   }
 
   bzero(&newtio, sizeof(newtio));
@@ -42,21 +45,28 @@ int reader_main(char* port) {
 
   if (tcsetattr(fd, TCSANOW, &newtio) == -1) {
     perror("tcsetattr");
-    exit(-1);
+    return -1;
   }
 
   printf("New termios structure set\n");
 
+  return fd;
+}
+
+int close_reader(int fd) {
+  if (tcsetattr(fd,TCSANOW,&oldtio) == -1){
+    perror("tsetattr");
+    return -1;
+  }
+  close(fd);
+  return 0;
+}
+
+int receive_set(int fd) {
   if (receive_supervision_frame(fd, SET) == 0) {
     printf("Sending UA reply...\n");
     send_supervision_frame(fd, UA);
   }
 
-
-  if(tcsetattr(fd,TCSANOW,&oldtio)==-1){
-    perror("tsetattr");
-    exit(-1);
-  }
-  close(fd);
   return 0;
 }

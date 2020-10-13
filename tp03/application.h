@@ -1,4 +1,5 @@
 #include "writenoncanonical.h"
+#include "noncanonical.h"
 
 #define TRANSMITTER 0
 #define RECEIVER    1
