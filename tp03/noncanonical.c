@@ -1,7 +1,7 @@
 /*Non-Canonical Input Processing*/
-#include "macros.h"
+#include "noncanonical.h"
 
-volatile int STOP=FALSE;
+
 
 int readMsg(int fd, unsigned char msg) {
   int part=0;
@@ -72,15 +72,14 @@ void resendMsg(int fd, unsigned char msg) {
   write(fd,mesh,5);
 }
 
-int main(int argc, char** argv) {
+int reader_main(char* port) {
   int fd;
   struct termios oldtio,newtio;
 
-  if ( (argc < 2) ||
-        ((strcmp("/dev/ttyS0", argv[1])!=0) &&
-        (strcmp("/dev/ttyS1", argv[1])!=0)  &&
-        (strcmp("/dev/ttyS10",argv[1])!=0) &&
-        (strcmp("/dev/ttyS11",argv[1])!=0))) {
+  if (((strcmp("/dev/ttyS0", port)!=0) &&
+        (strcmp("/dev/ttyS1", port)!=0)  &&
+        (strcmp("/dev/ttyS10",port)!=0) &&
+        (strcmp("/dev/ttyS11",port)!=0))) {
     printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS11\n");
     exit(1);
   }
@@ -90,9 +89,9 @@ int main(int argc, char** argv) {
     because we don't want to get killed if linenoise sends CTRL-C.
   */
 
-  fd = open(argv[1], O_RDWR | O_NOCTTY );
+  fd = open(port, O_RDWR | O_NOCTTY );
   if (fd <0) {
-    perror(argv[1]); exit(-1);
+    perror(port); exit(-1);
   }
 
   if (tcgetattr(fd, &oldtio) == -1) { /* save current port settings */

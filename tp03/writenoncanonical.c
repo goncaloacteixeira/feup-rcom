@@ -1,8 +1,9 @@
 /*Non-Canonical Input Processing*/
 #include "writenoncanonical.h"
 
-volatile int STOP = FALSE;
 int flag=1, conta=1;
+
+static int STOP = FALSE;
 
 void atende(){                // atende alarme
 	printf("alarme # %d\n", conta);
