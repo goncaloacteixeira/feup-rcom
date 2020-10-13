@@ -14,13 +14,13 @@ int readMsg(int fd, unsigned char msg) {
       case 0:
         if(rcv_msg==FLAG){
           part=1;
-          printf("FLAG: %c\n",rcv_msg);
+          printf("FLAG: 0x%x\n",rcv_msg);
         }
         break;
       case 1:
         if(rcv_msg==A){
           part=2;
-          printf("A: %c\n",rcv_msg);
+          printf("A: 0x%x\n",rcv_msg);
         }
         else {
           if(rcv_msg==FLAG)
@@ -32,7 +32,7 @@ int readMsg(int fd, unsigned char msg) {
       case 2:
         if(rcv_msg==msg){
           part=3;
-          printf("Control: %c\n",rcv_msg);
+          printf("Control: 0x%x\n",rcv_msg);
         }
         else
           part=0;
@@ -40,7 +40,7 @@ int readMsg(int fd, unsigned char msg) {
       case 3:
         if(rcv_msg==(A^msg)){
           part=4;
-          printf("Control BCC: %c\n",rcv_msg);
+          printf("Control BCC: 0x%x\n",rcv_msg);
         }
         else
           part=0;
@@ -48,7 +48,7 @@ int readMsg(int fd, unsigned char msg) {
       case 4:
         if(rcv_msg==FLAG) {
           part = 5;
-          printf("FINAL FLAG: %c\nReceived Control\n",rcv_msg);
+          printf("FINAL FLAG: 0x%x\nReceived Control\n",rcv_msg);
         }
         else
           part=0;
@@ -57,7 +57,7 @@ int readMsg(int fd, unsigned char msg) {
         break;
     }
   }
-  
+
   return TRUE;
 }
 
@@ -78,8 +78,8 @@ int main(int argc, char** argv) {
 
   if ( (argc < 2) ||
         ((strcmp("/dev/ttyS0", argv[1])!=0) &&
-        (strcmp("/dev/ttyS1", argv[1])!=0)  && 
-        (strcmp("/dev/ttyS10",argv[1])!=0) && 
+        (strcmp("/dev/ttyS1", argv[1])!=0)  &&
+        (strcmp("/dev/ttyS10",argv[1])!=0) &&
         (strcmp("/dev/ttyS11",argv[1])!=0))) {
     printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS11\n");
     exit(1);

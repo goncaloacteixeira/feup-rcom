@@ -22,20 +22,20 @@ void sendMsg(int fd, unsigned char msg) {
 
 
 void receiveUA(int *part, unsigned char *msg) {
-  
+
   switch (*part)
   {
   case 0:
     if(*msg==FLAG){
       *part=1;
-      printf("FLAG: %c\n",*msg);
+      printf("FLAG: 0x%x\n",*msg);
     }
-         
+
     break;
   case 1:
     if(*msg==A){
       *part=2;
-      printf("A: %c\n",*msg);
+      printf("A: 0x%x\n",*msg);
     }
     else {
       if(*msg==FLAG)
@@ -47,7 +47,7 @@ void receiveUA(int *part, unsigned char *msg) {
   case 2:
     if(*msg==UA){
       *part=3;
-      printf("UA: %c\n",*msg);
+      printf("UA: 0x%x\n",*msg);
     }
     else
       *part=0;
@@ -55,7 +55,7 @@ void receiveUA(int *part, unsigned char *msg) {
   case 3:
     if(*msg==(UA_BCC)){
       *part=4;
-      printf("UA_BCC: %c\n",*msg);
+      printf("UA_BCC: 0x%x\n",*msg);
     }
     else
       *part=0;
@@ -63,7 +63,7 @@ void receiveUA(int *part, unsigned char *msg) {
   case 4:
     if(*msg==FLAG) {
       STOP = TRUE;
-      printf("FINAL FLAG: %c\nReceived UA\n",*msg);
+      printf("FINAL FLAG: 0x%x\nReceived UA\n",*msg);
     }
     else
       *part=0;
@@ -79,8 +79,8 @@ int main(int argc, char** argv) {
 
   if ( (argc < 2) ||
         ((strcmp("/dev/ttyS0", argv[1])!=0) &&
-        (strcmp("/dev/ttyS1", argv[1])!=0) && 
-        (strcmp("/dev/ttyS10",argv[1])!=0) && 
+        (strcmp("/dev/ttyS1", argv[1])!=0) &&
+        (strcmp("/dev/ttyS10",argv[1])!=0) &&
         (strcmp("/dev/ttyS11",argv[1])!=0))) {
     printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS1\n");
     exit(1);
@@ -125,7 +125,7 @@ int main(int argc, char** argv) {
   }
   (void) signal(SIGALRM, atende);  // instala  rotina que atende interrupcao
 
-  
+
   printf("New termios structure set\n");
 
   unsigned char rcv_msg;
