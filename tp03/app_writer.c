@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
   /* sends a set mesh to the receiver */
   send_set(transmiter_fd);
   /* resets and closes the receiver fd for the port */
-  close_writer(transmiter_fd);
+  llclose(transmiter_fd, TRANSMITTER);
 
   /* TODO - Check for controll messages and then implement read and write*/
 

@@ -6,7 +6,7 @@
 
 int llopen(int port, int type);
 
-int llclose(int fd);
+int llclose(int fd, int type);
 
 int llwrite(int fd, char* buffer, int length);
 

@@ -12,8 +12,12 @@ int llopen(int port, int type) {
   return -1;
 }
 
-int llclose(int fd) {
-  return 0; /* TODO yet */
+int llclose(int fd, int type) {
+  if (type == TRANSMITTER)
+    return close_writer(fd);
+  else if (type == RECEIVER)
+    return close_reader(fd);
+  return -1;
 }
 
 int llwrite(int fd, char* buffer, int length) {
