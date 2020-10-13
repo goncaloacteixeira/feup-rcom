@@ -18,9 +18,9 @@
 
 
 // Mesh Macros
-#define FLAG 0x7E
-#define A 0x03
-#define SET 0x03
-#define UA 0x07
-#define SET_BCC A ^ SET
-#define UA_BCC A ^ UA
+#define FLAG        0x7E
+#define A           0x03
+#define SET         0x03
+#define UA          0x07
+#define SET_BCC     A ^ SET
+#define UA_BCC      A ^ UA
