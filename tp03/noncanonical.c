@@ -1,7 +1,7 @@
 /*Non-Canonical Input Processing*/
 #include "noncanonical.h"
 
-
+static int STOP = FALSE; /* unused */
 
 int readMsg(int fd, unsigned char msg) {
   int part=0;
@@ -76,13 +76,7 @@ int reader_main(char* port) {
   int fd;
   struct termios oldtio,newtio;
 
-  if (((strcmp("/dev/ttyS0", port)!=0) &&
-        (strcmp("/dev/ttyS1", port)!=0)  &&
-        (strcmp("/dev/ttyS10",port)!=0) &&
-        (strcmp("/dev/ttyS11",port)!=0))) {
-    printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS11\n");
-    exit(1);
-  }
+  /* top layer does the verification of the port name */
 
   /*
     Open serial port device for reading and writing and not as controlling tty
