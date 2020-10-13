@@ -1,0 +1,3 @@
+**/*.o
+**/app_writer
+**/app_reader
