@@ -10,9 +10,10 @@ typedef struct {
   unsigned char control;
   unsigned char bcc1;
   unsigned char* data;
+  int data_size; /* size of the data array */
   unsigned char bcc2;
 
-  unsigned char* raw_bytes;
+  unsigned char* raw_bytes; /* full set of bytes for the message */
 } information_frame_t;
 
 
@@ -23,3 +24,8 @@ int llclose(int fd, int type);
 int llwrite(int fd, char* buffer, int length);
 
 int llread(int fd, char* buffer);
+
+/**
+*   Method to pretty-print an information frame details
+*/
+void print_message(information_frame_t frame, int coded);

@@ -23,50 +23,84 @@ int llclose(int fd, int type) {
 }
 
 int llwrite(int fd, char* buffer, int length) {
-  int size_info = 6+length;
-  unsigned char *information_frame= (unsigned char*)malloc(size_info*sizeof(unsigned char)); /* changed so that we can adjust size dinamically*/
-  int i = 0;
-  information_frame[i++] = FLAG;
-  information_frame[i++] = A;
-  
-  /* C byte - Controls package, alternating between 0 and 1*/
-  if(mesh_send=0)
-    information_frame[i++] = C_I0; /* change this */
-  else
-    information_frame[i++] = C_I1;
+  printf("\nSending data...\n");
+  printf("Message: %s\n", buffer);
+  printf("Coding message...\n\n");
 
-  information_frame[i++] = information_frame[1] ^ information_frame[2];
+  information_frame_t frame; // to keep everything organized
+
+  frame.address = A;
+
+  /* C byte - Controls package, alternating between 0 and 1*/
+  if (mesh_send == 0) {
+    frame.control = C_I0;
+  }
+  else {
+    frame.control = C_I1;
+  }
+
+  frame.bcc1 = frame.address ^ frame.control;
+
+  int size_info = length;
+  unsigned char *information_frame = (unsigned char*) malloc (size_info*sizeof(unsigned char)); /* changed so that we can adjust size dinamically*/
   unsigned char bcc = 0xff;
+  int i = 0;
   for (int j = 0; j < length; j++) {
     /* Data stuffing and buffer size adjusting*/
     if(buffer[j]==ESCAPE) {
       information_frame = (unsigned char*)realloc(information_frame, ++size_info);
-      information_frame[i++]=ESCAPE;information_frame[i++]=ESCAPE_ESC;
+      information_frame[i++] = ESCAPE;
+      information_frame[i++] = ESCAPE_ESC;
     }
     else if(buffer[j]==FLAG) {
       information_frame = (unsigned char*)realloc(information_frame, ++size_info);
-      information_frame[i++]=ESCAPE;information_frame[i++]=ESCAPE_FLAG;
+      information_frame[i++] = ESCAPE;
+      information_frame[i++] = ESCAPE_FLAG;
     }
     else
       information_frame[i++] = buffer[j];
-    
+
     bcc = buffer[j] ^ bcc;
   }
-  /* BCC stuffing*/
-  if(bcc==ESCAPE) {
-    information_frame = (unsigned char*)realloc(information_frame, ++size_info);
-    information_frame[i++]=ESCAPE;information_frame[i++]=ESCAPE_ESC;
+  frame.data = information_frame; /* saves the stuffed data-buffer on the struct */
+  frame.data_size = i;            /* size of the suffed data-buffer */
+  frame.bcc2 = bcc;               /* this BCC2 is not stuffed yet and it will be displayed *unstuffed* */
+
+  /* Saving all data to be transmitted to .raw_bytes */
+  frame.raw_bytes = (unsigned char*) malloc ((frame.data_size + 10) * sizeof(unsigned char*));
+  int j = 0;
+  frame.raw_bytes[j++] = FLAG;
+  frame.raw_bytes[j++] = frame.address;
+  frame.raw_bytes[j++] = frame.control;
+  frame.raw_bytes[j++] = frame.bcc1;
+  for (int k = 0; k < frame.data_size; k++) {
+    frame.raw_bytes[j++] = frame.data[k];
   }
-  else if(bcc==FLAG) {
-    information_frame = (unsigned char*)realloc(information_frame, ++size_info);
-    information_frame[i++]=ESCAPE;information_frame[i++]=ESCAPE_FLAG;
+  /* BCC stuffing*/
+  if (bcc == ESCAPE) {
+    frame.raw_bytes[j++] = ESCAPE;
+    frame.raw_bytes[j++] = ESCAPE_ESC;
+  }
+  else if (bcc == FLAG) {
+    frame.raw_bytes[j++] = ESCAPE;
+    frame.raw_bytes[j++] = ESCAPE_FLAG;
   }
   else
-    information_frame[i++] = bcc;
+    frame.raw_bytes[j++] = bcc;
 
-  information_frame[i++] = FLAG;
+  frame.raw_bytes[j++] = FLAG;
 
-  return write(fd, information_frame, i);
+  printf("Coded message:\n");
+  print_message(frame, TRUE);
+
+  int count = -1;
+  if ((count = write(fd, frame.raw_bytes, j)) != -1) {
+    printf("Message sent!\n");
+  } else {
+    printf("Message not sent!\n");
+  }
+
+  return count;
 }
 
 int llread(int fd, char* buffer) {
@@ -152,13 +186,13 @@ int llread(int fd, char* buffer) {
   int data_size=i-1;
 
   information_frame.data = (unsigned char *) malloc (data_size * sizeof(unsigned char));
-  
+
   int j = 0, p=0;
   for (; j < i && p<i; j++) {
     /* Destuffing data*/
     if(buffer[p]==ESCAPE) {
       information_frame.data = (unsigned char*)realloc(information_frame.data, (--data_size)*sizeof(unsigned char));
-      if(buffer[p+1]==ESCAPE_ESC) 
+      if(buffer[p+1]==ESCAPE_ESC)
         information_frame.data[j]=ESCAPE;
       else if (buffer[p+1]==ESCAPE_FLAG)
         information_frame.data[j]=FLAG;
@@ -169,18 +203,35 @@ int llread(int fd, char* buffer) {
       information_frame.data[j] = buffer[p];
       p++;
     }
-      
+
   }
   information_frame.bcc2 = buffer[i-1];
+  information_frame.data_size = j - 1;
 
-  printf("Printing message received...\n");
-  printf("A: 0x%x\n", information_frame.address);
-  printf("C: 0x%x\n", information_frame.control);
-  printf("BCC1: 0x%x\n", information_frame.bcc1);
-  for (int k = 0; k < j - 1; k++) {
-    printf("Data[%d]: 0x%x - %c\n", k, information_frame.data[k], information_frame.data[k]);
-  }
-  printf("BCC2: 0x%x\n", information_frame.bcc2);
+  print_message(information_frame, FALSE);
 
   return j;
+}
+
+void print_message(information_frame_t frame, int stuffed) {
+  printf("Address: 0x%x\n", frame.address);
+  printf("Control: 0x%x\n", frame.control);
+  printf("BCC1: 0x%x\n", frame.bcc1);
+  int j = 0;
+  for (int i = 0; i < frame.data_size; i++) {
+    if (frame.data[i] == ESCAPE && stuffed) {
+      printf("DATA[%d]: 0x%x - ESCAPE\n", j++, frame.data[i++]);
+      if (frame.data[i] == ESCAPE_ESC) {
+        printf("DATA[%d]: 0x%x - ESCAPED ESCAPE\n", j++, frame.data[i]);
+      }
+      else if (frame.data[i] == ESCAPE_FLAG) {
+        printf("DATA[%d]: 0x%x - ESCAPED FLAG\n", j++, frame.data[i]);
+      }
+    }
+    else {
+      printf("DATA[%d]: 0x%x - %c (char)\n", j++, frame.data[i], frame.data[i]);
+    }
+  }
+  printf("BCC2: 0x%x\n", frame.bcc2);
+  printf("Message: %s - size: %d - strlen: %ld\n", frame.data, frame.data_size, strlen(frame.data));
 }
