@@ -24,3 +24,16 @@
 #define UA          0x07
 #define SET_BCC     A ^ SET
 #define UA_BCC      A ^ UA
+
+// Control Macros (there is another way of defining them)
+#define C_I0        0x00
+#define C_I1        0x40
+#define C_RR0       0x05
+#define C_RR1       0x85
+#define C_REJ0      0x01
+#define C_REJ1      0x81
+
+//Byte Stuffing
+#define ESCAPE      0x7D
+#define ESCAPE_ESC  0x5D
+#define ESCAPE_FLAG 0x5E
