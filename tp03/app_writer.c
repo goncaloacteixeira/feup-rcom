@@ -15,6 +15,9 @@ int main(int argc, char *argv[]) {
   }
   /* sends a set mesh to the receiver */
   send_set(transmiter_fd);
+
+  llwrite(transmiter_fd, "hello", 5);
+
   /* resets and closes the receiver fd for the port */
   llclose(transmiter_fd, TRANSMITTER);
 

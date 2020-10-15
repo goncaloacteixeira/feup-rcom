@@ -15,6 +15,10 @@ int main(int argc, char *argv[]) {
   }
   /* sends a set mesh to the receiver */
   receive_set(receiver_fd);
+
+  char buffer[256];
+  llread(receiver_fd, buffer);
+
   /* resets and closes the receiver fd for the port */
   llclose(receiver_fd, RECEIVER);
 
