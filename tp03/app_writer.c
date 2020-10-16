@@ -18,6 +18,13 @@ int main(int argc, char *argv[]) {
 
   llwrite(transmiter_fd, "~}hello}~~~", 11);
 
+  int ack;
+  if ((ack = receive_acknowledgement(transmiter_fd)) != -1) {
+    printf("Send packet: %d\n", ack);
+  } else {
+    printf("Rejected last packet\n");
+  }
+
   /* resets and closes the receiver fd for the port */
   llclose(transmiter_fd, TRANSMITTER);
 

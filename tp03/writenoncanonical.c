@@ -91,3 +91,12 @@ int send_set(int fd) {
 
     return 0;
 }
+
+int receive_acknowledgement(int fd) {
+  unsigned char rr = _receive_supervision_frame(fd);
+  if (rr == C_REJ0 || rr == C_REJ1) {
+    return -1;
+  }
+
+  return (rr == C_RR0) ? 0 : 1;
+}

@@ -70,3 +70,23 @@ int receive_set(int fd) {
 
   return 0;
 }
+
+int send_acknowledgement(int fd, int frame, int accept) {
+  printf("Sending acknowledgement...\n");
+  if (frame == 0) {
+    if (accept == 1) {
+      /* caso seja o frame 0 e seja aceite então pede o frame 1 */
+      send_supervision_frame(fd, C_RR1);
+    } else {
+      send_supervision_frame(fd, C_REJ0);
+    }
+  }
+  else {
+    if (accept == 1) {
+      send_supervision_frame(fd, C_RR0);
+    } else {
+      send_supervision_frame(fd, C_REJ1);
+    }
+  }
+  return 0;
+}

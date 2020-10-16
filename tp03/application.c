@@ -112,9 +112,13 @@ int llread(int fd, char* buffer) {
   unsigned char rcv_msg;
   printf("Reading...\n");
 
-  /*  part 0 - before first flag
-      part 1 - between flag start and flag stop
-      part 2 - after flag stop */
+  /* lógica: processar os dados todos em raw bytes, depois fazer o unstuffing,
+      e depois fazer o tratamento dos dados */
+
+/*
+  part 0 - before first flag
+  part 1 - between flag start and flag stop
+  part 2 - after flag stop */
   while (part != 2) {
     read(fd, &rcv_msg, 1);
 
@@ -161,15 +165,12 @@ int llread(int fd, char* buffer) {
   information_frame.data_size = data_size - 4;
 
   print_message(information_frame, FALSE);
+  /* verificar se existem erros nos BCCs caso existam, return error */
   if (verify_message(information_frame) != OK) {
-    /* pedir retransmissão */
-    printf("error on BCC\n");
+    return ERROR;
   } else {
-    /* enviar ACK */
-    printf("all ok\n");
+    return j;
   }
-
-  return j;
 }
 
 void print_message(information_frame_t frame, int stuffed) {

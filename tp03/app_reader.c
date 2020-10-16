@@ -17,7 +17,9 @@ int main(int argc, char *argv[]) {
   receive_set(receiver_fd);
 
   char buffer[256];
-  llread(receiver_fd, buffer);
+  if (llread(receiver_fd, buffer) != ERROR) {
+    send_acknowledgement(receiver_fd, 0, TRUE);
+  }
 
   /* resets and closes the receiver fd for the port */
   llclose(receiver_fd, RECEIVER);
