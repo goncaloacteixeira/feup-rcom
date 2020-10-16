@@ -25,6 +25,8 @@ int llwrite(int fd, char* buffer, int length);
 
 int llread(int fd, char* buffer);
 
+int verify_message(information_frame_t frame);
+
 /**
 *   Method to pretty-print an information frame details
 */

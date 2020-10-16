@@ -105,110 +105,69 @@ int llwrite(int fd, char* buffer, int length) {
 
 int llread(int fd, char* buffer) {
   information_frame_t information_frame;
+  information_frame.raw_bytes = (unsigned char*) malloc (sizeof(unsigned char));
 
   int i = 0;
-  int part=0;
-  unsigned char rcv_msg,rcv_c;
+  int part = 0;
+  unsigned char rcv_msg;
   printf("Reading...\n");
-  while (part!=6) {
 
+  /*  part 0 - before first flag
+      part 1 - between flag start and flag stop
+      part 2 - after flag stop */
+  while (part != 2) {
     read(fd, &rcv_msg, 1);
-    switch (part) {
-      case 0:
-        if(rcv_msg==FLAG){
-          part=1;
-          printf("FLAG: 0x%x\n",rcv_msg);
-        }
-        break;
-      case 1:
-        if(rcv_msg==A){
-          part=2;
-          // printf("A: 0x%x\n",rcv_msg);
-          information_frame.address = rcv_msg;
-        }
-        else {
-          if(rcv_msg==FLAG)
-            part=1;
-          else
-            part=0;
-        }
-        break;
-      case 2:
-        /* Started implementing ACK, incomplete*/
-        if(rcv_msg == C_I0){
-          part = 3;
-          mesh_rec=0;
-          rcv_c=rcv_msg;
-          // printf("Control: 0x%x\n",rcv_msg);
-          information_frame.control = rcv_msg;
-        }
-        else if(rcv_msg == C_I1){
-          part = 3;
-          mesh_rec=1;
-          rcv_c=rcv_msg;
-          // printf("Control: 0x%x\n",rcv_msg);
-          information_frame.control = rcv_msg;
-        }
-        else
-          part=0;
-        break;
-      case 3:
-        if(rcv_msg==(A^rcv_c)){
-          part=4;
-          // printf("Control BCC: 0x%x\n",rcv_msg);
-          information_frame.bcc1 = rcv_msg;
-        }
-        else
-          part=0;
-        break;
-      case 4:
-        if (rcv_msg != FLAG) {
-          // printf("Data [%d]: 0x%x\n", i, rcv_msg);
-          buffer[i++] = rcv_msg;
-          part = 4;
-        } else {
-          part = 5;
-        }
-        break;
 
-      case 5:
-        if(rcv_msg==FLAG) {
-          part = 6;
-          printf("FINAL FLAG: 0x%x\nReceived Information Frame\n",rcv_msg);
-        }
-        else
-          part=0;
-        break;
-      default:
-        break;
+    if (rcv_msg == FLAG && part == 0) {
+      part = 1;
+      continue;
     }
+    else if (rcv_msg == FLAG && part == 1) {
+      part = 2;
+      break;
+    }
+    information_frame.raw_bytes[i++] = rcv_msg;
+    information_frame.raw_bytes = (unsigned char*) realloc (information_frame.raw_bytes, (i+1));
   }
-  int data_size=i-1;
 
-  information_frame.data = (unsigned char *) malloc (data_size * sizeof(unsigned char));
-
-  int j = 0, p=0;
+  int data_size = i;
+  /* UNSTUFFING BYTES */
+  int j = 0, p = 0;
   for (; j < i && p<i; j++) {
-    /* Destuffing data*/
-    if(buffer[p]==ESCAPE) {
-      information_frame.data = (unsigned char*)realloc(information_frame.data, (--data_size)*sizeof(unsigned char));
-      if(buffer[p+1]==ESCAPE_ESC)
-        information_frame.data[j]=ESCAPE;
-      else if (buffer[p+1]==ESCAPE_FLAG)
-        information_frame.data[j]=FLAG;
-
+    if (information_frame.raw_bytes[p] == ESCAPE) {
+      information_frame.raw_bytes = (unsigned char*)realloc(information_frame.raw_bytes, --data_size);
+      if (information_frame.raw_bytes[p+1] == ESCAPE_ESC)
+        information_frame.raw_bytes[j] = ESCAPE;
+      else if (information_frame.raw_bytes[p+1] == ESCAPE_FLAG)
+        information_frame.raw_bytes[j] = FLAG;
       p+=2;
     }
     else {
-      information_frame.data[j] = buffer[p];
+      information_frame.raw_bytes[j] = information_frame.raw_bytes[p];
       p++;
     }
-
   }
-  information_frame.bcc2 = buffer[i-1];
-  information_frame.data_size = j - 1;
+
+  information_frame.data = (unsigned char*) malloc ((data_size - 4) * sizeof(unsigned char));
+
+  information_frame.address = information_frame.raw_bytes[0];
+  information_frame.control = information_frame.raw_bytes[1];
+  information_frame.bcc1 = information_frame.raw_bytes[2];
+  p = 0;
+  for (int byte = 3; byte < data_size - 1; byte++) {
+    information_frame.data[p++] = information_frame.raw_bytes[byte];
+  }
+  information_frame.bcc2 = information_frame.raw_bytes[data_size - 1];
+  information_frame.data_size = data_size - 4;
 
   print_message(information_frame, FALSE);
+  if (verify_message(information_frame) != OK) {
+    /* pedir retransmissão */
+    printf("error on BCC\n");
+  } else {
+    /* enviar ACK */
+    printf("all ok\n");
+  }
 
   return j;
 }
@@ -234,4 +193,20 @@ void print_message(information_frame_t frame, int stuffed) {
   }
   printf("BCC2: 0x%x\n", frame.bcc2);
   printf("Message: %s - size: %d - strlen: %ld\n", frame.data, frame.data_size, strlen(frame.data));
+}
+
+int verify_message(information_frame_t frame) {
+  if (frame.bcc1 != (frame.control ^ frame.address)) {
+    return ERROR;
+  }
+  unsigned char bcc2 = 0xff;
+  for (int i = 0; i < frame.data_size; i++) {
+    bcc2 = frame.data[i] ^ bcc2;
+  }
+
+  if (bcc2 != frame.bcc2) {
+    return ERROR;
+  }
+
+  return OK;
 }
