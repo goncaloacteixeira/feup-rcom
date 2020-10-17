@@ -4,7 +4,7 @@ int main(int argc, char *argv[]) {
   if (argc != 2) {
     printf("Usage: %s <number for serial port>\n", argv[0]);
     printf("\nExample: %s 11\t-\tfor '/dev/ttyS11'\n", argv[0]);
-    return -1;
+    exit(-1);
   }
 
   /* opens transmiter file descriptor on second layer */
@@ -14,8 +14,12 @@ int main(int argc, char *argv[]) {
     exit(-1);
   }
   /* sends a set mesh to the receiver */
-  receive_set(receiver_fd);
-
+  if(receive_set(receiver_fd)==-1){
+    printf("Couldn't send UA\nAborted program\n");
+    llclose(receiver_fd, RECEIVER);
+    exit(-1);
+    
+  }
   char buffer[256];
   if (llread(receiver_fd, buffer) != ERROR) {
     send_acknowledgement(receiver_fd, 0, TRUE);

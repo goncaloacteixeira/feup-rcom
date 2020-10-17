@@ -2,7 +2,7 @@
 #include "writenoncanonical.h"
 
 int flag = 1, conta = 1;
-
+extern int reetransmit;
 static struct termios oldtio;
 static struct termios newtio;
 
@@ -85,21 +85,26 @@ int send_set(int fd) {
         printf("Sent mesh\n");
         flag = 0;
         printf("Receiving response...\n");
-		//sleep(3); To test resend
+		sleep(3); //To test resend
         while (!flag) {
-            if (receive_supervision_frame(fd, UA) == 0) break;
+            if (receive_supervision_frame(fd, UA) == 0){
+				reetransmit=0;
+				break;
+			}
         }
-        if (flag){
-			printf("Timed Out - Retrying\n");
-			tcflush(fd, TCIOFLUSH);
-		}
+
+        if (flag) printf("Timed Out - Retrying\n");
 		print_elapsed_time(start);
+
     } while (conta < 4 && flag);
+
 	alarm(RESET_ALARM); // deactivate alarm
-		if (conta == 4) {
-			printf("gave up\n");
-			return -1;
-		}
+
+	if (conta == 4) {
+		reetransmit=2;
+		printf("gave up\n");
+		return -1;
+	}
 	
     return 0;
 }

@@ -1,6 +1,7 @@
 /*Non-Canonical Input Processing*/
 #include "noncanonical.h"
 
+extern int reetransmit;
 static struct termios oldtio;
 static struct termios newtio;
 
@@ -47,7 +48,6 @@ int open_reader(char* port) {
     perror("tcsetattr");
     return -1;
   }
-
   printf("New termios structure set\n");
 
   return fd;
@@ -66,6 +66,14 @@ int receive_set(int fd) {
   if (receive_supervision_frame(fd, SET) == 0) {
     printf("Sending UA reply...\n");
     send_supervision_frame(fd, UA);
+  }
+  if(reetransmit) {
+    printf("Timedout - Retrying\n");
+    receive_set(fd);
+  }
+  else if(reetransmit==2) {
+    close_reader(fd);
+    return -1;
   }
 
   return 0;

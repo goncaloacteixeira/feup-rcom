@@ -1,5 +1,7 @@
 #include "data_link.h"
 
+int reetransmit=1;
+
 int send_supervision_frame(int fd, unsigned char msg) {
   unsigned char mesh[5];
   mesh[0] = FLAG;
@@ -10,6 +12,7 @@ int send_supervision_frame(int fd, unsigned char msg) {
   int err = write(fd, mesh, 5);
   if(!(err==5))
     return ERROR;
+  return 0;
 }
 
 unsigned char _receive_supervision_frame(int fd) {
@@ -77,7 +80,7 @@ int receive_supervision_frame(int fd, unsigned char msg) {
   unsigned char rcv_msg;
   printf("Reading...\n");
   while (part!=5) {
-
+    /* IF OUT OF TRIES FOR RECEIVING SET, READING BLOCKS HERE*/
     read(fd,&rcv_msg,1);
     switch (part) {
       case 0:
@@ -134,4 +137,13 @@ void print_elapsed_time(struct timespec start) {
   clock_gettime(CLOCK_MONOTONIC_RAW, &end);
   double delta = (end.tv_sec - start.tv_sec) * 1000.0 + (end.tv_nsec - start.tv_nsec) / 1000000.0;
   printf("Elapsed time: %f s\n",delta);
+}
+
+
+int check_connection(int fd) {
+  if(fcntl(fd,F_GETFD)==-1) {
+    printf("Connection closed\n");
+    return -1;
+  }
+  return 0;
 }

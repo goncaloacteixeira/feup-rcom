@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <string.h>
+#include <errno.h>
 
 #define BAUDRATE B38400
 #define MODEMDEVICE "/dev/ttyS1"

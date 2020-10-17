@@ -20,3 +20,8 @@ unsigned char _receive_supervision_frame(int fd);
 *   Method to pretty-print the elapsed time between two meshes
 */
 void print_elapsed_time(struct timespec start);
+
+/**
+* takes fd and checks if it hasn't closed
+*/
+int check_connection(int fd);
