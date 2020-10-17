@@ -72,23 +72,35 @@ int close_writer(int fd) {
 }
 
 int send_set(int fd) {
+	struct timespec start;
     do {
-        send_supervision_frame(fd, SET);
-        alarm(3); // activa alarme de 3s
+		clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+		alarm(TIMEOUT); // activa alarme de 3s
+        
+		if(send_supervision_frame(fd, SET)==-1){
+			printf("Error writing SET\n");
+			continue;
+		}
+			
         printf("Sent mesh\n");
         flag = 0;
         printf("Receiving response...\n");
-        while (1) {
+		//sleep(3); To test resend
+        while (!flag) {
             if (receive_supervision_frame(fd, UA) == 0) break;
         }
-        if (flag) printf("Timed Out - Retrying\n");
+        if (flag){
+			printf("Timed Out - Retrying\n");
+			tcflush(fd, TCIOFLUSH);
+		}
+		print_elapsed_time(start);
     } while (conta < 4 && flag);
-
+	alarm(RESET_ALARM); // deactivate alarm
 		if (conta == 4) {
 			printf("gave up\n");
 			return -1;
 		}
-
+	
     return 0;
 }
 

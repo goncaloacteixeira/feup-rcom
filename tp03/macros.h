@@ -2,6 +2,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <termios.h>
+#include <time.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -16,6 +17,9 @@
 #define TRUE 1
 #define OK 1
 #define ERROR -1
+#define TRIES 3
+#define TIMEOUT 3
+#define RESET_ALARM 0
 
 
 

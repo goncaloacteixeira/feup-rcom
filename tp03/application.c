@@ -76,7 +76,7 @@ int llwrite(int fd, char* buffer, int length) {
   for (int k = 0; k < frame.data_size; k++) {
     frame.raw_bytes[j++] = frame.data[k];
   }
-  /* BCC stuffing*/
+  /* BCC2 stuffing*/
   if (bcc == ESCAPE) {
     frame.raw_bytes[j++] = ESCAPE;
     frame.raw_bytes[j++] = ESCAPE_ESC;
@@ -211,3 +211,5 @@ int verify_message(information_frame_t frame) {
 
   return OK;
 }
+
+

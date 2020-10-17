@@ -31,3 +31,4 @@ int verify_message(information_frame_t frame);
 *   Method to pretty-print an information frame details
 */
 void print_message(information_frame_t frame, int coded);
+

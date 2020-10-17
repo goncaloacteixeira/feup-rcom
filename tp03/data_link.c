@@ -1,13 +1,15 @@
 #include "data_link.h"
 
-void send_supervision_frame(int fd, unsigned char msg) {
+int send_supervision_frame(int fd, unsigned char msg) {
   unsigned char mesh[5];
   mesh[0] = FLAG;
   mesh[1] = A;
   mesh[2] = msg;
   mesh[3] = mesh[1] ^ mesh[2];
   mesh[4] = FLAG;
-  write(fd, mesh, 5);
+  int err = write(fd, mesh, 5);
+  if(!(err==5))
+    return ERROR;
 }
 
 unsigned char _receive_supervision_frame(int fd) {
@@ -125,4 +127,11 @@ int receive_supervision_frame(int fd, unsigned char msg) {
     }
   }
   return (part == 5) ?  0 : -1;
+}
+
+void print_elapsed_time(struct timespec start) {
+  struct timespec end;
+  clock_gettime(CLOCK_MONOTONIC_RAW, &end);
+  double delta = (end.tv_sec - start.tv_sec) * 1000.0 + (end.tv_nsec - start.tv_nsec) / 1000000.0;
+  printf("Elapsed time: %f s\n",delta);
 }
