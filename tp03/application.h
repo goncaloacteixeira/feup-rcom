@@ -3,6 +3,7 @@
 
 #define TRANSMITTER 0
 #define RECEIVER    1
+#define STOP_AND_WAIT 50
 
 
 typedef struct {
@@ -16,6 +17,8 @@ typedef struct {
   unsigned char* raw_bytes; /* full set of bytes for the message */
 } information_frame_t;
 
+
+static int current_frame = 0;
 
 int llopen(int port, int type);
 

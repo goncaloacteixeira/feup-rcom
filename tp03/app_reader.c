@@ -20,9 +20,11 @@ int main(int argc, char *argv[]) {
     exit(-1);
     
   }
+
   char buffer[256];
-  if (llread(receiver_fd, buffer) != ERROR) {
-    send_acknowledgement(receiver_fd, 0, TRUE);
+  int size;
+  if ((size = llread(receiver_fd, buffer)) != -1) {
+      printf("All OK on reading\n");
   }
 
   /* resets and closes the receiver fd for the port */

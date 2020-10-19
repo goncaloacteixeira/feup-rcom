@@ -1,7 +1,5 @@
 #include "application.h"
 
-int mesh_send=0, mesh_rec=0;
-
 int llopen(int port, int type) {
   char file[48];
   sprintf(file, "/dev/ttyS%d", port);
@@ -32,12 +30,7 @@ int llwrite(int fd, char* buffer, int length) {
   frame.address = A;
 
   /* C byte - Controls package, alternating between 0 and 1*/
-  if (mesh_send == 0) {
-    frame.control = C_I0;
-  }
-  else {
-    frame.control = C_I1;
-  }
+  frame.control = (current_frame == 0) ? C_I0 : C_I1;
 
   frame.bcc1 = frame.address ^ frame.control;
 
@@ -100,7 +93,18 @@ int llwrite(int fd, char* buffer, int length) {
     printf("Message not sent!\n");
   }
 
-  return count;
+  /* STOP AND WAIT */
+  usleep(STOP_AND_WAIT);
+  printf("Stopping and waiting for acknowledgement...\n");
+  int ack = receive_acknowledgement(fd);
+  if (ack != -1) {
+      printf("Received positive ACK\n");
+      return count;
+  }
+  else {
+      printf("Received negative ACK\n");
+      return ERROR;
+  }
 }
 
 int llread(int fd, char* buffer) {
@@ -164,12 +168,17 @@ int llread(int fd, char* buffer) {
   information_frame.bcc2 = information_frame.raw_bytes[data_size - 1];
   information_frame.data_size = data_size - 4;
 
+  memcpy(buffer, information_frame.data, information_frame.data_size);
+
   print_message(information_frame, FALSE);
   /* verificar se existem erros nos BCCs caso existam, return error */
   if (verify_message(information_frame) != OK) {
+    send_acknowledgement(fd, current_frame, FALSE);
     return ERROR;
   } else {
-    return j;
+    send_acknowledgement(fd, current_frame, TRUE);
+    current_frame = (current_frame == 0) ? 1 : 0;
+    return information_frame.data_size;
   }
 }
 
@@ -211,5 +220,3 @@ int verify_message(information_frame_t frame) {
 
   return OK;
 }
-
-
