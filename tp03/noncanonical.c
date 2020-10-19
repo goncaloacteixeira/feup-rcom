@@ -67,14 +67,6 @@ int receive_set(int fd) {
     printf("Sending UA reply...\n");
     send_supervision_frame(fd, UA);
   }
-  if(reetransmit) {
-    printf("Timedout - Retrying\n");
-    receive_set(fd);
-  }
-  else if(reetransmit==2) {
-    close_reader(fd);
-    return -1;
-  }
 
   return 0;
 }

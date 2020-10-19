@@ -85,7 +85,7 @@ int send_set(int fd) {
         printf("Sent mesh\n");
         flag = 0;
         printf("Receiving response...\n");
-		sleep(3); //To test resend
+		//sleep(3); //To test resend
         while (!flag) {
             if (receive_supervision_frame(fd, UA) == 0){
 				reetransmit=0;
