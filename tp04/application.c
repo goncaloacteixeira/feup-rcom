@@ -173,17 +173,22 @@ int llread(int fd, char* buffer) {
   information_frame.bcc2 = information_frame.raw_bytes[data_size - 1];
   information_frame.data_size = data_size - 4;
 
-  buffer = (char*) malloc (information_frame.data_size);
-  memcpy(buffer, information_frame.data, information_frame.data_size);
+  // buffer = (char*) malloc (information_frame.data_size);
 
   print_message(information_frame, FALSE);
   /* verificar se existem erros nos BCCs caso existam, return error */
   if (verify_message(information_frame) != OK) {
     send_acknowledgement(fd, current_frame, FALSE);
+    memcpy(buffer, information_frame.data, information_frame.data_size);
+    free(information_frame.raw_bytes);
+    free(information_frame.data);
     return ERROR;
   } else {
     send_acknowledgement(fd, current_frame, TRUE);
     current_frame = (current_frame == 0) ? 1 : 0;
+    memcpy(buffer, information_frame.data, information_frame.data_size);
+    free(information_frame.raw_bytes);
+    free(information_frame.data);
     return information_frame.data_size;
   }
 }

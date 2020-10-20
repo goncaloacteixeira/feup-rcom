@@ -1,6 +1,33 @@
 #include "application.h"
+#include "utils.h"
 
 extern int flag;
+
+control_packet_t generate_control_packet(/* int file fize, int file name */ int control) {
+	control_packet_t c_packet;
+	c_packet.control = control;
+	c_packet.file_size = 0x25;
+	c_packet.file_name = "hello_there";
+
+	int i = 0;
+	// control packet
+	c_packet.raw_bytes = (unsigned char*) malloc (i+1);
+	c_packet.raw_bytes[i++] = c_packet.control; c_packet.raw_bytes = (unsigned char*) realloc (c_packet.raw_bytes, (i+1));
+	// file size
+	c_packet.raw_bytes[i++] = 0x1; c_packet.raw_bytes = (unsigned char*) realloc (c_packet.raw_bytes, (i+1));
+	c_packet.raw_bytes[i++] = sizeof(c_packet.file_size); c_packet.raw_bytes = (unsigned char*) realloc (c_packet.raw_bytes, (i+1));
+	c_packet.raw_bytes[i++] = c_packet.file_size; c_packet.raw_bytes = (unsigned char*) realloc (c_packet.raw_bytes, (i+1));
+	// file name
+	c_packet.raw_bytes[i++] = 0x2; c_packet.raw_bytes = (unsigned char*) realloc (c_packet.raw_bytes, (i+1));
+	c_packet.raw_bytes[i++] = strlen(c_packet.file_name); c_packet.raw_bytes = (unsigned char*) realloc (c_packet.raw_bytes, (i+1));
+	for (int j = 0; j < strlen(c_packet.file_name); j++) {
+		c_packet.raw_bytes[i++] = c_packet.file_name[j]; c_packet.raw_bytes = (unsigned char*) realloc (c_packet.raw_bytes, (i+1));
+	}
+
+	c_packet.raw_bytes_size = i;
+
+	return c_packet;
+}
 
 int main(int argc, char *argv[]) {
 	if (argc != 2) {
@@ -23,14 +50,14 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
-	/* tirei a parte do timeout pq estava a dar um problema com 
-	a alteração que estava a fazer sry :) mas agora já podemos tratar disso
-	e começar a tratar da parte dos slides a partir do 22 */
+	control_packet_t c_packet_start = generate_control_packet(START);
+
+	// sending control packet
 	struct timespec start;
 	clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-	llwrite(transmiter_fd, "~}hello}~~~", 11);
+	llwrite(transmiter_fd, c_packet_start.raw_bytes, c_packet_start.raw_bytes_size);
 	print_elapsed_time(start);
-  
+
 
 	/* resets and closes the receiver fd for the port */
 	llclose(transmiter_fd, TRANSMITTER);
