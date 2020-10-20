@@ -89,12 +89,7 @@ int llwrite(int fd, char* buffer, int length) {
   printf("Coded message:\n");
   print_message(frame, TRUE);
 
-  int count = -1;
-  if ((count = write(fd, frame.raw_bytes, j)) != -1) {
-    printf("Message sent!\n");
-  } else {
-    printf("Message not sent!\n");
-  }
+  
 
 
   /* fazer aqui a parte de timeouts com *sigaction*
@@ -105,23 +100,30 @@ int llwrite(int fd, char* buffer, int length) {
   // usleep(STOP_AND_WAIT);
   printf("Stopping and waiting for acknowledgement...\n");
   do {
-	alarm(TIMEOUT);
-	flag=0;
-	while(!flag) {
- 		int ack = receive_acknowledgement(fd);
-    		if (ack != -1) {
-   		   printf("Received positive ACK\n");
-		   alarm(RESET_ALARM);
-     	  	   return count;
- 		}
- 		else {
-    		  printf("Received negative ACK\n");
-		  alarm(RESET_ALARM);
-    	 	  return ERROR;
-	 	}
-	}
-	printf("Timed out\nTrying again\n");
-  }while(flag && conta<4);
+    int count = -1;
+    if ((count = write(fd, frame.raw_bytes, j)) != -1) {
+      printf("Message sent!\n");
+    } else {
+      printf("Message not sent!\n");
+    }
+    alarm(TIMEOUT);
+    flag=0;
+    while(!flag) {
+      int ack = receive_acknowledgement(fd);
+      if (ack != -1) {
+        printf("Received positive ACK\n");
+        alarm(RESET_ALARM);
+        return count;
+      }
+      else {
+        printf("Received negative ACK\n");
+        alarm(RESET_ALARM);
+        return ERROR;
+      }
+    }
+    
+	  printf("Timed out\nTrying again\n");
+  } while(flag && conta<4);
  return ERROR;
 }
 
@@ -191,14 +193,14 @@ int llread(int fd, char* buffer) {
   print_message(information_frame, FALSE);
   /* verificar se existem erros nos BCCs caso existam, return error */
   if (verify_message(information_frame) != OK) {
-    sleep(15);
+    sleep(10);
     send_acknowledgement(fd, current_frame, FALSE);
     memcpy(buffer, information_frame.data, information_frame.data_size);
     free(information_frame.raw_bytes);
     free(information_frame.data);
     return ERROR;
   } else {
-    sleep(15);
+    sleep(10);
     send_acknowledgement(fd, current_frame, TRUE);
     current_frame = (current_frame == 0) ? 1 : 0;
     memcpy(buffer, information_frame.data, information_frame.data_size);

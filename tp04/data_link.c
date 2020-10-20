@@ -20,7 +20,7 @@ unsigned char _receive_supervision_frame(int fd) {
   unsigned char rcv_msg, ctrl;
   printf("Reading response...\n");
   while (part!=5) {
-    read(fd,&rcv_msg,1);
+    read(fd,&rcv_msg,1); //Blocking here, even wen value of flag in the alarm is altered
     switch (part) {
       case 0:
         if(rcv_msg==FLAG){
