@@ -93,6 +93,11 @@ int llwrite(int fd, char* buffer, int length) {
     printf("Message not sent!\n");
   }
 
+
+  /* fazer aqui a parte de timeouts com *sigaction*
+  ignorar a parte de baixo pq o stop and wait não vai ser
+  feito aqui */
+
   /* STOP AND WAIT */
   usleep(STOP_AND_WAIT);
   printf("Stopping and waiting for acknowledgement...\n");
