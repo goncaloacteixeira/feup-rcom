@@ -25,7 +25,7 @@ int llclose(int fd, int type) {
 
 int llwrite(int fd, char* buffer, int length) {
   printf("\nSending data...\n");
-  printf("Message: %s\n", buffer);
+  // printf("Message: %s\n", buffer);
   printf("Coding message...\n\n");
 
   information_frame_t frame; // to keep everything organized
@@ -86,8 +86,8 @@ int llwrite(int fd, char* buffer, int length) {
 
   frame.raw_bytes[j++] = FLAG;
 
-  printf("Coded message:\n");
-  print_message(frame, TRUE);
+  // printf("Coded message:\n");
+  // print_message(frame, TRUE);
 
   int count = -1;
   if ((count = write(fd, frame.raw_bytes, j)) != -1) {
@@ -109,19 +109,19 @@ int llwrite(int fd, char* buffer, int length) {
 	flag=0;
 	while(!flag) {
  		int ack = receive_acknowledgement(fd);
-    		if (ack != -1) {
-   		   printf("Received positive ACK\n");
-		   alarm(RESET_ALARM);
-     	  	   return count;
+          if (ack != -1) {
+   		  printf("Received positive ACK\n");
+		  alarm(RESET_ALARM);
+     	  return count;
  		}
  		else {
-    		  printf("Received negative ACK\n");
+    	  printf("Received negative ACK\n");
 		  alarm(RESET_ALARM);
-    	 	  return ERROR;
+    	  return ERROR;
 	 	}
 	}
 	printf("Timed out\nTrying again\n");
-  }while(flag && conta<4);
+  } while(flag && conta<4);
  return ERROR;
 }
 
@@ -188,17 +188,17 @@ int llread(int fd, char* buffer) {
 
   // buffer = (char*) malloc (information_frame.data_size);
 
-  print_message(information_frame, FALSE);
+  // print_message(information_frame, FALSE);
   /* verificar se existem erros nos BCCs caso existam, return error */
   if (verify_message(information_frame) != OK) {
-    sleep(15);
+    // sleep(15);
     send_acknowledgement(fd, current_frame, FALSE);
     memcpy(buffer, information_frame.data, information_frame.data_size);
     free(information_frame.raw_bytes);
     free(information_frame.data);
     return ERROR;
   } else {
-    sleep(15);
+    // sleep(15);
     send_acknowledgement(fd, current_frame, TRUE);
     current_frame = (current_frame == 0) ? 1 : 0;
     memcpy(buffer, information_frame.data, information_frame.data_size);

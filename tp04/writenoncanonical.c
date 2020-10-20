@@ -77,7 +77,7 @@ int send_set(int fd) {
 		clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 		alarm(TIMEOUT); // activa alarme de 3s
         
-		if(send_supervision_frame(fd, SET)==-1){
+		if (send_supervision_frame(fd, SET)==-1){
 			printf("Error writing SET\n");
 			continue;
 		}

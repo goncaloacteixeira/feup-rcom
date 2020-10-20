@@ -26,6 +26,12 @@ int main(int argc, char *argv[]) {
   int size;
   if ((size = llread(receiver_fd, buffer)) != -1) {
       control_packet_t packet = parse_control_packet(buffer, size);
+      print_control_packet(packet);
+  }
+
+  if ((size = llread(receiver_fd, buffer)) != -1) {
+      control_packet_t packet = parse_control_packet(buffer, size);
+      print_control_packet(packet);
   }
 
   /* resets and closes the receiver fd for the port */

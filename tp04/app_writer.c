@@ -7,18 +7,18 @@ control_packet_t generate_control_packet(/* int file fize, int file name */ int 
 	control_packet_t c_packet;
 	c_packet.control = control;
 	c_packet.file_size = 0x25;
-	c_packet.file_name = "hello_there";
+	c_packet.file_name = "hello_there.zip";
 
 	int i = 0;
 	// control packet
 	c_packet.raw_bytes = (unsigned char*) malloc (i+1);
 	c_packet.raw_bytes[i++] = c_packet.control; c_packet.raw_bytes = (unsigned char*) realloc (c_packet.raw_bytes, (i+1));
 	// file size
-	c_packet.raw_bytes[i++] = 0x1; c_packet.raw_bytes = (unsigned char*) realloc (c_packet.raw_bytes, (i+1));
+	c_packet.raw_bytes[i++] = FILE_SIZE; c_packet.raw_bytes = (unsigned char*) realloc (c_packet.raw_bytes, (i+1));
 	c_packet.raw_bytes[i++] = sizeof(c_packet.file_size); c_packet.raw_bytes = (unsigned char*) realloc (c_packet.raw_bytes, (i+1));
 	c_packet.raw_bytes[i++] = c_packet.file_size; c_packet.raw_bytes = (unsigned char*) realloc (c_packet.raw_bytes, (i+1));
 	// file name
-	c_packet.raw_bytes[i++] = 0x2; c_packet.raw_bytes = (unsigned char*) realloc (c_packet.raw_bytes, (i+1));
+	c_packet.raw_bytes[i++] = FILE_NAME; c_packet.raw_bytes = (unsigned char*) realloc (c_packet.raw_bytes, (i+1));
 	c_packet.raw_bytes[i++] = strlen(c_packet.file_name); c_packet.raw_bytes = (unsigned char*) realloc (c_packet.raw_bytes, (i+1));
 	for (int j = 0; j < strlen(c_packet.file_name); j++) {
 		c_packet.raw_bytes[i++] = c_packet.file_name[j]; c_packet.raw_bytes = (unsigned char*) realloc (c_packet.raw_bytes, (i+1));
@@ -51,18 +51,25 @@ int main(int argc, char *argv[]) {
 	}
 
 	control_packet_t c_packet_start = generate_control_packet(START);
+	control_packet_t c_packet_stop = generate_control_packet(STOP);
 
 	// sending control packet
 	struct timespec start;
 	clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+
+	print_control_packet(c_packet_start);
 	llwrite(transmiter_fd, c_packet_start.raw_bytes, c_packet_start.raw_bytes_size);
+	print_elapsed_time(start);
+
+	usleep(STOP_AND_WAIT);
+
+	print_control_packet(c_packet_stop);
+	llwrite(transmiter_fd, c_packet_stop.raw_bytes, c_packet_stop.raw_bytes_size);
 	print_elapsed_time(start);
 
 
 	/* resets and closes the receiver fd for the port */
 	llclose(transmiter_fd, TRANSMITTER);
-
-	/* TODO - Check for controll messages and then implement read and write*/
 
 	return 0;
 }
