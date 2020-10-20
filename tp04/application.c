@@ -1,5 +1,8 @@
 #include "application.h"
 
+extern int flag;
+extern int conta;
+
 int llopen(int port, int type) {
   char file[48];
   sprintf(file, "/dev/ttyS%d", port);
@@ -99,17 +102,27 @@ int llwrite(int fd, char* buffer, int length) {
   feito aqui */
 
   /* STOP AND WAIT */
-  usleep(STOP_AND_WAIT);
+  // usleep(STOP_AND_WAIT);
   printf("Stopping and waiting for acknowledgement...\n");
-  int ack = receive_acknowledgement(fd);
-  if (ack != -1) {
-      printf("Received positive ACK\n");
-      return count;
-  }
-  else {
-      printf("Received negative ACK\n");
-      return ERROR;
-  }
+  do {
+	alarm(TIMEOUT);
+	flag=0;
+	while(!flag) {
+ 		int ack = receive_acknowledgement(fd);
+    		if (ack != -1) {
+   		   printf("Received positive ACK\n");
+		   alarm(RESET_ALARM);
+     	  	   return count;
+ 		}
+ 		else {
+    		  printf("Received negative ACK\n");
+		  alarm(RESET_ALARM);
+    	 	  return ERROR;
+	 	}
+	}
+	printf("Timed out\nTrying again\n");
+  }while(flag && conta<4);
+ return ERROR;
 }
 
 int llread(int fd, char* buffer) {
@@ -179,9 +192,11 @@ int llread(int fd, char* buffer) {
   print_message(information_frame, FALSE);
   /* verificar se existem erros nos BCCs caso existam, return error */
   if (verify_message(information_frame) != OK) {
+    sleep(15);
     send_acknowledgement(fd, current_frame, FALSE);
     return ERROR;
   } else {
+    sleep(15);
     send_acknowledgement(fd, current_frame, TRUE);
     current_frame = (current_frame == 0) ? 1 : 0;
     return information_frame.data_size;
