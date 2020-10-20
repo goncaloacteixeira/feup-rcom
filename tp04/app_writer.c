@@ -98,10 +98,7 @@ int main(int argc, char *argv[]) {
 		usleep(STOP_AND_WAIT);
 		data_packet_t data = generate_data_packet(messages[i], strlen(messages[i]), i);
 		print_data_packet(data, FALSE);
-		if (llwrite(transmiter_fd, data.raw_bytes, data.raw_bytes_size) == ERROR) {
-			i--;
-			printf("Resending...\n");
-		}
+		llwrite(transmiter_fd, data.raw_bytes, data.raw_bytes_size);	
 		print_elapsed_time(start);
 	}
 

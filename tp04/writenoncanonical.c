@@ -22,14 +22,14 @@ int open_writer(char* port) {
 
 	int fd = open(port, O_RDWR | O_NOCTTY);
 	if (fd < 0) {
-			perror(port);
-			return -1;
+		perror(port);
+		return -1;
 	}
 
 	if (tcgetattr(fd, &oldtio) == -1) {
-			/* save current port settings */
-			perror("tcgetattr");
-			return -1;
+		/* save current port settings */
+		perror("tcgetattr");
+		return -1;
 	}
 
 	bzero(&newtio, sizeof(newtio));
@@ -54,25 +54,26 @@ int open_writer(char* port) {
 		perror("tcsetattr");
 		return -1;
 	}
-	struct sigaction action;
+	/*struct sigaction action;
 	sigemptyset(&action.sa_mask);
 	action.sa_handler = atende;
 	action.sa_flags = 0;
-	sigaction(SIGALRM,&action,NULL); // instala  rotina que atende interrupcao
-
+	sigaction(SIGALRM,&action,NULL);*/ // instala  rotina que atende interrupcao
+	signal(SIGALRM,atende);
+	siginterrupt(SIGALRM,1);
 	printf("New termios structure set\n");
 
 	return fd;
 }
 
 int close_writer(int fd) {
-		if (tcsetattr(fd, TCSANOW, &oldtio) == -1) {
-				perror("tcsetattr");
-				return -1;
-		}
+	if (tcsetattr(fd, TCSANOW, &oldtio) == -1) {
+		perror("tcsetattr");
+		return -1;
+	}
 
-		close(fd);
-		return 0;
+	close(fd);
+	return 0;
 }
 
 int send_set(int fd) {
@@ -90,8 +91,8 @@ int send_set(int fd) {
 		//sleep(3); //To test resend
         while (!flag) {
             if (receive_supervision_frame(fd, UA) == 0){
-				reetransmit=0;
-				break;
+			reetransmit=0;
+			break;
 			}
         }
 
@@ -104,7 +105,7 @@ int send_set(int fd) {
 
 	if (conta == 4) {
 		reetransmit=2;
-		printf("gave up\n");
+		printf("Gave up\n");
 		return -1;
 	}
 	

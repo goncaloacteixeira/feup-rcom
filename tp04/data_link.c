@@ -20,7 +20,8 @@ unsigned char _receive_supervision_frame(int fd) {
   unsigned char rcv_msg, ctrl;
   printf("Reading supervision frame...\n");
   while (part!=5) {
-    read(fd,&rcv_msg,1); //Blocking here, even wen value of flag in the alarm is altered
+    int rd = read(fd,&rcv_msg,1); //Blocking here, even wen value of flag in the alarm is altered
+    if(rd ==-1 && errno==EINTR) {printf("READ failed\n"); return 2;}
     switch (part) {
       case 0:
         if(rcv_msg==FLAG){
@@ -80,8 +81,8 @@ int receive_supervision_frame(int fd, unsigned char msg) {
   unsigned char rcv_msg;
   printf("Reading supervision frame...\n");
   while (part!=5) {
-    /* IF OUT OF TRIES FOR RECEIVING SET, READING BLOCKS HERE*/
-    read(fd,&rcv_msg,1);
+    int rd = read(fd,&rcv_msg,1); //Blocking here, even wen value of flag in the alarm is altered
+    if(rd ==-1 && errno==EINTR) {printf("READ failed\n"); return 2;}
     switch (part) {
       case 0:
         if(rcv_msg==FLAG){
