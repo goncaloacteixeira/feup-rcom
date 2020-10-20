@@ -18,10 +18,10 @@ int main(int argc, char *argv[]) {
     printf("Couldn't send UA\nAborted program\n");
     llclose(receiver_fd, RECEIVER);
     exit(-1);
-    
+
   }
 
-  char buffer[256];
+  char* buffer;
   int size;
   if ((size = llread(receiver_fd, buffer)) != -1) {
       printf("All OK on reading\n");

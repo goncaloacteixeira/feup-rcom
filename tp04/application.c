@@ -173,6 +173,7 @@ int llread(int fd, char* buffer) {
   information_frame.bcc2 = information_frame.raw_bytes[data_size - 1];
   information_frame.data_size = data_size - 4;
 
+  buffer = (char*) malloc (information_frame.data_size);
   memcpy(buffer, information_frame.data, information_frame.data_size);
 
   print_message(information_frame, FALSE);
