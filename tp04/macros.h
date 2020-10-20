@@ -22,8 +22,6 @@
 #define TIMEOUT 3
 #define RESET_ALARM 0
 
-
-
 // Mesh Macros
 #define FLAG        0x7E
 #define A           0x03
@@ -44,3 +42,10 @@
 #define ESCAPE      0x7D
 #define ESCAPE_ESC  0x5D
 #define ESCAPE_FLAG 0x5E
+
+// packet Macros
+#define DATA      0x1
+#define START     0x2
+#define STOP      0x3
+#define FILE_SIZE 0x0
+#define FILE_NAME 0x1

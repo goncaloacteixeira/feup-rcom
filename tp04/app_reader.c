@@ -1,4 +1,5 @@
 #include "application.h"
+#include "utils.h"
 
 int main(int argc, char *argv[]) {
   if (argc != 2) {
@@ -21,10 +22,10 @@ int main(int argc, char *argv[]) {
 
   }
 
-  char* buffer;
+  char buffer[1024];
   int size;
   if ((size = llread(receiver_fd, buffer)) != -1) {
-      printf("All OK on reading\n");
+      control_packet_t packet = parse_control_packet(buffer, size);
   }
 
   /* resets and closes the receiver fd for the port */
