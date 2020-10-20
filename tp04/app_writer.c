@@ -29,6 +29,36 @@ control_packet_t generate_control_packet(/* int file fize, int file name */ int 
 	return c_packet;
 }
 
+data_packet_t generate_data_packet(unsigned char* buffer, int size, int sequence) {
+	data_packet_t d_packet;
+	d_packet.control = DATA;
+	d_packet.data_field_size = size;
+	d_packet.sequence = sequence;
+
+	int i = 0;
+	// control
+	d_packet.raw_bytes = (unsigned char*)malloc(i + 1);
+	d_packet.raw_bytes[i++] = d_packet.control; d_packet.raw_bytes = (unsigned char*)realloc(d_packet.raw_bytes, (i + 1));
+	// sequence
+	d_packet.raw_bytes[i++] = d_packet.sequence; d_packet.raw_bytes = (unsigned char*)realloc(d_packet.raw_bytes, (i + 1));
+	// size
+	unsigned int x = (unsigned int) size;
+	unsigned char high = (unsigned char)(x >> 8);
+	unsigned char low = x & 0xff;
+	d_packet.raw_bytes[i++] = high; d_packet.raw_bytes = (unsigned char*)realloc(d_packet.raw_bytes, (i + 1));
+	d_packet.raw_bytes[i++] = low; d_packet.raw_bytes = (unsigned char*)realloc(d_packet.raw_bytes, (i + 1));
+	// data
+	d_packet.data = (unsigned char*)malloc(size);
+	for (int j = 0; j < size; j++) {
+		d_packet.data[j] = buffer[j];
+		d_packet.raw_bytes[i++] = buffer[j]; d_packet.raw_bytes = (unsigned char*)realloc(d_packet.raw_bytes, (i + 1));
+	}
+
+	d_packet.raw_bytes_size = i;
+
+	return d_packet;
+}
+
 int main(int argc, char *argv[]) {
 	if (argc != 2) {
 		printf("Usage: %s <number for serial port>\n", argv[0]);
@@ -60,6 +90,20 @@ int main(int argc, char *argv[]) {
 	print_control_packet(c_packet_start);
 	llwrite(transmiter_fd, c_packet_start.raw_bytes, c_packet_start.raw_bytes_size);
 	print_elapsed_time(start);
+
+
+	unsigned char* messages[4] = { "hello world", "hi there", "rcom is nice", "when it works" };
+
+	for (int i = 0; i < 4; i++) {
+		usleep(STOP_AND_WAIT);
+		data_packet_t data = generate_data_packet(messages[i], strlen(messages[i]), i);
+		print_data_packet(data, FALSE);
+		if (llwrite(transmiter_fd, data.raw_bytes, data.raw_bytes_size) == ERROR) {
+			i--;
+			printf("Resending...\n");
+		}
+		print_elapsed_time(start);
+	}
 
 	usleep(STOP_AND_WAIT);
 

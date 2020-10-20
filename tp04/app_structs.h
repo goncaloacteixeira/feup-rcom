@@ -2,7 +2,7 @@
 typedef struct {
   unsigned char control;
   unsigned char sequence;
-  unsigned char data_field_size;
+  int data_field_size;
   unsigned char* data;
 
   unsigned char* raw_bytes;

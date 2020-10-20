@@ -26,7 +26,7 @@ int llclose(int fd, int type) {
 int llwrite(int fd, char* buffer, int length) {
   printf("\nSending data...\n");
   // printf("Message: %s\n", buffer);
-  printf("Coding message...\n\n");
+  printf("Coding message...\n");
 
   information_frame_t frame; // to keep everything organized
 
