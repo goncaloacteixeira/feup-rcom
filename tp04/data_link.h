@@ -12,9 +12,9 @@ int send_supervision_frame(int fd, unsigned char msg);
 int receive_supervision_frame(int fd, unsigned char msg);
 
 /**
-* receives a supervision frame and returns it's control byte
+* receives a ACK frame and returns it's control byte
 */
-unsigned char _receive_supervision_frame(int fd);
+unsigned char receive_acknowledgement(int fd);
 
 /**
 *   Method to pretty-print the elapsed time between two meshes

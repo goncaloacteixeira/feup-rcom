@@ -103,7 +103,6 @@ int llwrite(int fd, char* buffer, int length) {
   int count = -1;
   
   do {
-    
     if ((count = write(fd, frame.raw_bytes, j)) != -1) {
       printf("Message sent!\n");
     } else {
@@ -113,16 +112,24 @@ int llwrite(int fd, char* buffer, int length) {
     flag=0;
     //sleep(3); //to test resend
     
-    int ack = receive_acknowledgement(fd);
-    if (ack == 0) {
-      printf("Received positive ACK\n");
-      alarm(RESET_ALARM);
-      return count;
-    }
-    else if(ack == -1){
+    unsigned char ack = receive_acknowledgement(fd);
+    if (ack == C_REJ0 || ack == C_REJ1) {
       printf("Received negative ACK\n");
       alarm(RESET_ALARM);
       return ERROR;
+    }
+    // Retransmition
+    if ((ack == C_RR0 && current_frame == 0) || (ack == C_RR1 && current_frame == 1)) {
+      printf("Received positive ACK (retransmition)\n");
+      alarm(RESET_ALARM);
+      return ERROR; // returns error but to the application only means it has to send the same frame again
+    }
+
+    if ((ack == C_RR0 && current_frame == 1) || (ack == C_RR1 && current_frame == 0)) {
+      printf("Received positive ACK\n");
+      alarm(RESET_ALARM);
+      current_frame = (current_frame == 0) ? 1 : 0; // changes the current frame
+      return count;
     }
     else {
       printf("Timed out\nTrying again\n");
@@ -197,17 +204,17 @@ int llread(int fd, char* buffer) {
 
   // buffer = (char*) malloc (information_frame.data_size);
 
-  // print_message(information_frame, FALSE);
+  print_message(information_frame, FALSE);
   /* verificar se existem erros nos BCCs caso existam, return error */
   if (verify_message(information_frame) != OK) {
-    sleep(15);
+    // sleep(15);
     send_acknowledgement(fd, current_frame, FALSE);
     memcpy(buffer, information_frame.data, information_frame.data_size);
     free(information_frame.raw_bytes);
     free(information_frame.data);
     return ERROR;
   } else {
-    sleep(15);
+    // sleep(4);
     send_acknowledgement(fd, current_frame, TRUE);
     current_frame = (current_frame == 0) ? 1 : 0;
     memcpy(buffer, information_frame.data, information_frame.data_size);
