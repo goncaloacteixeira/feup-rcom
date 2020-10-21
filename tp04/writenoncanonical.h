@@ -1,12 +1,9 @@
-#include "data_link.h"
-
-
-int send_set(int fd); /* main function for writer */
+#include "macros.h"
 
 /**
 * function to open and set port
 */
-int open_writer(char* port);
+int open_writer(char *port);
 
 /**
 * function to reset and close port

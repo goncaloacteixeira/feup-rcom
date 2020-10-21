@@ -5,7 +5,7 @@ extern int reetransmit;
 static struct termios oldtio;
 static struct termios newtio;
 
-int open_reader(char* port) {
+int open_reader(char *port) {
   int fd;
 
   /* top layer does the verification of the port name */
@@ -15,8 +15,8 @@ int open_reader(char* port) {
     because we don't want to get killed if linenoise sends CTRL-C.
   */
 
-  fd = open(port, O_RDWR | O_NOCTTY );
-  if (fd <0) {
+  fd = open(port, O_RDWR | O_NOCTTY);
+  if (fd < 0) {
     perror(port);
     return -1;
   }
@@ -34,8 +34,8 @@ int open_reader(char* port) {
   /* set input mode (non-canonical, no echo,...) */
   newtio.c_lflag = 0;
 
-  newtio.c_cc[VTIME]    = 1;   /* inter-character timer unused */
-  newtio.c_cc[VMIN]     = 0;   /* blocking read until 1 chars received */
+  newtio.c_cc[VTIME] = 1; /* inter-character timer unused */
+  newtio.c_cc[VMIN] = 0;  /* blocking read until 1 chars received */
 
   /*
     VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a
@@ -54,39 +54,10 @@ int open_reader(char* port) {
 }
 
 int close_reader(int fd) {
-  if (tcsetattr(fd,TCSANOW,&oldtio) == -1){
+  if (tcsetattr(fd, TCSANOW, &oldtio) == -1) {
     perror("tsetattr");
     return -1;
   }
   close(fd);
-  return 0;
-}
-
-int receive_set(int fd) {
-  if (receive_supervision_frame(fd, SET) == 0) {
-    printf("Sending UA reply...\n");
-    send_supervision_frame(fd, UA);
-  }
-
-  return 0;
-}
-
-int send_acknowledgement(int fd, int frame, int accept) {
-  printf("Sending acknowledgement...\n");
-  if (frame == 0) {
-    if (accept == 1) {
-      // caso seja o frame 0 e seja aceite então pede o frame 1
-      send_supervision_frame(fd, C_RR1);
-    } else {
-      send_supervision_frame(fd, C_REJ0);
-    }
-  }
-  else {
-    if (accept == 1) {
-      send_supervision_frame(fd, C_RR0);
-    } else {
-      send_supervision_frame(fd, C_REJ1);
-    }
-  }
   return 0;
 }

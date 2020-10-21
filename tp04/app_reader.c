@@ -1,5 +1,4 @@
-#include "application.h"
-#include "utils.h"
+#include "data_link.h"
 
 int main(int argc, char *argv[]) {
   if (argc != 2) {
@@ -65,7 +64,8 @@ int main(int argc, char *argv[]) {
       break;
     }
     data_packet_t data = parse_data_packet(buffer, size);
-    if (data.control != DATA) continue;
+    if (data.control != DATA)
+      continue;
     print_data_packet(data, FALSE);
     full_message[data.sequence] = data.data;
     message_size++;

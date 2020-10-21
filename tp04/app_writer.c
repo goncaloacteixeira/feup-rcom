@@ -1,10 +1,8 @@
-#include "application.h"
-#include "utils.h"
+#include "data_link.h"
 
 extern int flag;
 
-control_packet_t
-generate_control_packet(/* int file fize, int file name */ int control) {
+control_packet_t generate_control_packet(int control) {
   control_packet_t c_packet;
   c_packet.control = control;
   c_packet.file_size = 0x25;
@@ -37,8 +35,7 @@ generate_control_packet(/* int file fize, int file name */ int control) {
   return c_packet;
 }
 
-data_packet_t generate_data_packet(unsigned char *buffer, int size,
-                                   int sequence) {
+data_packet_t generate_data_packet(unsigned char *buffer, int size, int sequence) {
   data_packet_t d_packet;
   d_packet.control = DATA;
   d_packet.data_field_size = size;
