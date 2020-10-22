@@ -80,15 +80,8 @@ int main(int argc, char *argv[]) {
   /* opens transmiter file descriptor on second layer */
   int transmiter_fd = llopen(atoi(argv[1]), TRANSMITTER);
   /* in case there's an error oppening the port */
-  if (transmiter_fd == -1) {
-    exit(-1);
-  }
-  /* sends a set mesh to the receiver */
-  int err;
-  if ((err = send_set(transmiter_fd)) == -1) {
-    printf("Couldn't send set\nAborted program\n");
-    llclose(transmiter_fd, TRANSMITTER);
-    return -1;
+  if (transmiter_fd == ERROR) {
+    exit(ERROR);
   }
 
   control_packet_t c_packet_start = generate_control_packet(START);

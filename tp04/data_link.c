@@ -201,12 +201,31 @@ int llopen(int port, int type) {
   char file[48];
   sprintf(file, "/dev/ttyS%d", port);
 
-  if (type == TRANSMITTER)
-    return open_writer(file);
-  else if (type == RECEIVER)
-    return open_reader(file);
-
-  return -1;
+  int fd;
+  if (type == TRANSMITTER) {
+    if ((fd = open_writer(file)) == ERROR) {
+      perror("llopen: error on open_writer");
+      return ERROR;
+    }
+    if (send_set(fd) == ERROR) {
+      perror("llopen: error sending SET");
+      return ERROR;
+    }
+    return fd;
+  }
+  else if (type == RECEIVER) {
+    if ((fd = open_reader(file)) == ERROR) {
+      perror("llopen: error on open_reader");
+      return ERROR;
+    }
+    if (receive_set(fd) == ERROR) {
+      perror("llopen: error receiving SET");
+      return ERROR;
+    }
+    return fd;
+  }
+  perror("llopen: type not valid");
+  return ERROR;
 }
 
 int llclose(int fd, int type) {
