@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
     size = llwrite(transmiter_fd, c_packet_start.raw_bytes,
                    c_packet_start.raw_bytes_size);
     if (size == ERROR) {
-      usleep(1000000); // waiting and then retry
+      usleep(STOP_AND_WAIT); // waiting and then retry
       tries++;
       printf("Retrying...\n");
       continue;
@@ -137,7 +137,7 @@ int main(int argc, char *argv[]) {
         tries = 0; // reset tries counter
         break;
       }
-      usleep(1000000);
+      usleep(STOP_AND_WAIT);
     }
     if (tries == TRIES) {
       printf("Limit Tries Exceeded - ABORT\n");
@@ -162,6 +162,7 @@ int main(int argc, char *argv[]) {
       tries = 0;
       break;
     }
+    usleep(STOP_AND_WAIT);
   }
   if (tries == TRIES) {
     printf("Limit Tries Exceeded - ABORT\n");
