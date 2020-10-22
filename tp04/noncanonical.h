@@ -1,14 +1,11 @@
-#include "data_link.h"
+#include "macros.h"
 
 /**
- * Reading Fucntion
- * @param port Serial Port to be read
- *
+ * @brief Opens the reader
  */
-int receive_set(int fd);
+int open_reader(char *port);
 
-int open_reader(char* port);
-
+/**
+ * @brief Reset and close the reader
+ */
 int close_reader(int fd);
-
-int send_acknowledgement(int fd, int frame, int accept);

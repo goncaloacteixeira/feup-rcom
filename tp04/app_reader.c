@@ -1,5 +1,4 @@
-#include "application.h"
-#include "utils.h"
+#include "data_link.h"
 
 int main(int argc, char *argv[]) {
   if (argc != 2) {
@@ -15,7 +14,7 @@ int main(int argc, char *argv[]) {
     exit(-1);
   }
   /* sends a set mesh to the receiver */
-  if(receive_set(receiver_fd)==-1){
+  if (receive_set(receiver_fd) == -1) {
     printf("Couldn't send UA\nAborted program\n");
     llclose(receiver_fd, RECEIVER);
     exit(-1);
@@ -25,44 +24,67 @@ int main(int argc, char *argv[]) {
   int size;
 
   int state = 0;
+  int tries = 0;
 
-  if ((size = llread(receiver_fd, buffer)) != -1) {
+  // * START Control Packet
+  while (state == 0 && tries != TRIES) {
+    size = llread(receiver_fd, buffer);
+    if (size == ERROR) {
+      printf("Error reading\n");
+      tries++;
+      continue;
+    }
     control_packet_t packet = parse_control_packet(buffer, size);
     print_control_packet(packet);
     if (packet.control == START) {
-      state = 1; /* for later, if needed (state machine) */
+      state = 1;
     }
   }
+  if (tries == TRIES) {
+    printf("Limit Tries Exceeded - ABORT\n");
+    llclose(receiver_fd, RECEIVER);
+    return -1;
+  }
+  tries = 0; // reseting tries counter
 
-  int sequence = 0;
-  unsigned char** full_message;
-  full_message = (unsigned char**) malloc (1024);
+  // * DATA Packets
+  int message_size = 0;
+  unsigned char **full_message;
+  full_message = (unsigned char **)malloc(1024);
 
-  while (size != -1 && state == 1) {
+  while (state == 1 && tries != TRIES) {
     size = llread(receiver_fd, buffer);
     if (size == ERROR) {
-      state = 3;
-      break;
+      printf("Error reading\n");
+      tries++;
+      continue;
     }
     if (buffer[0] == STOP) {
       state = 2;
       break;
     }
     data_packet_t data = parse_data_packet(buffer, size);
-    if(data.control!=DATA) continue;
-    if(data.sequence==sequence) {
-      print_data_packet(data, FALSE);
-      full_message[sequence++] = data.data; 
-    }
-      
+    if (data.control != DATA)
+      continue;
+    print_data_packet(data, FALSE);
+    full_message[data.sequence] = data.data;
+    message_size++;
+    tries = 0; // reseting tries because data went through
+  }
+  if (tries == TRIES) {
+    printf("Limit Tries Exceeded - ABORT\n");
+    llclose(receiver_fd, RECEIVER);
+    return -1;
   }
 
-  control_packet_t packet = parse_control_packet(buffer, size);
-  print_control_packet(packet);
-
-  printf("Displaying full message\n");
-  for (int i = 0; i < sequence; i++) {
-    printf("Message[%d]: %s\n", i, full_message[i]);
+  // * STOP Control Packet
+  if (state == 2) {
+    control_packet_t packet = parse_control_packet(buffer, size);
+    print_control_packet(packet);
+    printf("Displaying full message\n");
+    for (int i = 0; i < message_size; i++) {
+      printf("Message[%d]: %s\n", i, full_message[i]);
+    }
   }
 
   /* resets and closes the receiver fd for the port */
