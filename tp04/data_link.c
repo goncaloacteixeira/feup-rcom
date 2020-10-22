@@ -237,7 +237,7 @@ int llclose(int fd, int type) {
 }
 
 int llwrite(int fd, char *buffer, int length) {
-  printf("\nSending data...\n");
+  printf("Sending data...\n");
   // printf("Message: %s\n", buffer);
   printf("Coding message...\n");
 
