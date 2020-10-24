@@ -13,7 +13,7 @@ typedef struct {
   unsigned char control;
   unsigned char sequence;
   int data_field_size;
-  unsigned char *data;
+  unsigned char data[1024];
 
   unsigned char *raw_bytes;
   int raw_bytes_size;
