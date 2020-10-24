@@ -8,9 +8,9 @@ control_packet_t generate_control_packet(int control) {
   c_packet.file_name = "hello_there.zip";
 
   unsigned char buf[sizeof(unsigned long)];
-  int num = number_to_array(25658745, buf);
+  int num = number_to_array(256, buf);
 
-  c_packet.file_size = (unsigned char*) malloc (num);
+  c_packet.file_size = (unsigned char *)malloc(num);
   memcpy(c_packet.file_size, buf, num);
   c_packet.filesize_size = num;
 
@@ -101,85 +101,47 @@ int main(int argc, char *argv[]) {
 
   print_control_packet(c_packet_start);
 
-  int tries = 0;
-  int size = -1;
-  while (tries != TRIES && size == ERROR) {
-    size = llwrite(transmiter_fd, c_packet_start.raw_bytes,
-                   c_packet_start.raw_bytes_size);
-    if (size == ERROR) {
-      usleep(STOP_AND_WAIT); // waiting and then retry
-      tries++;
-      printf("Retrying...\n");
-      continue;
-    }
-  }
-  if (tries == TRIES) {
-    printf("Limit Tries Exceeded - ABORT\n");
+  int size = llwrite(transmiter_fd, c_packet_start.raw_bytes, c_packet_start.raw_bytes_size);
+  if (size == ERROR) {
+    printf("Error writing START Control Packet, aborting...\n");
     llclose(transmiter_fd, TRANSMITTER);
-    return -1;
+    return ERROR;
   }
-  tries = 0; // reset tries counter
   print_elapsed_time(start);
 
   unsigned char *messages[4] = {"hello world", "hi there", "rcom is nice",
                                 "when it works"};
-
   for (int i = 0; i < 4; i++) {
     usleep(STOP_AND_WAIT);
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 
-    data_packet_t data =
-        generate_data_packet(messages[i], strlen(messages[i]), i);
+    data_packet_t data = generate_data_packet(messages[i], strlen(messages[i]), i);
     print_data_packet(&data, FALSE);
-    while (tries != TRIES) {
-      int count = llwrite(transmiter_fd, data.raw_bytes, data.raw_bytes_size);
-      if (count == ERROR) {
-        printf("Retrying...\n");
-        tries++;
-      } else {
-        tries = 0; // reset tries counter
-        break;
-      }
-      usleep(STOP_AND_WAIT);
-    }
-    if (tries == TRIES) {
-      printf("Limit Tries Exceeded - ABORT\n");
+
+    size = llwrite(transmiter_fd, data.raw_bytes, data.raw_bytes_size);
+    if (size == ERROR) {
+      printf("Error writing Data Packet, aborting...\n");
       llclose(transmiter_fd, TRANSMITTER);
-      return -1;
+      return ERROR;
     }
     print_elapsed_time(start);
   }
-  tries = 0; // reset
 
   usleep(STOP_AND_WAIT);
-
   print_control_packet(c_packet_stop);
-
   clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-
-  while (tries != TRIES) {
-    int size = llwrite(transmiter_fd, c_packet_stop.raw_bytes,
-                       c_packet_stop.raw_bytes_size);
-    if (size == ERROR) {
-      printf("Retrying...\n");
-      tries++;
-    } else {
-      tries = 0;
-      break;
-    }
-    usleep(STOP_AND_WAIT);
-  }
-  if (tries == TRIES) {
-    printf("Limit Tries Exceeded - ABORT\n");
+  size = llwrite(transmiter_fd, c_packet_stop.raw_bytes, c_packet_stop.raw_bytes_size);
+  if (size == ERROR) {
+    printf("Error writing STOP Control Packet, aborting...\n");
     llclose(transmiter_fd, TRANSMITTER);
-    return -1;
+    return ERROR;
   }
 
+  usleep(STOP_AND_WAIT);
   print_elapsed_time(start);
-
   /* resets and closes the receiver fd for the port */
   llclose(transmiter_fd, TRANSMITTER);
 
-  return 0;
+  return OK;
 }

@@ -16,20 +16,21 @@ control_packet_t parse_control_packet(unsigned char *raw_bytes, int size) {
       int length = raw_bytes[++i];
       int offset = i + length;
       filesize = (unsigned char*) malloc (length);
-      printf("length: %d\n", length);
       for (int k = 0; i < offset; k++) {
         filesize[k] = raw_bytes[++i];
         filesize_size++;
       }
+      continue;
     }
     if (raw_bytes[i] == FILE_NAME) {
-      unsigned int length = raw_bytes[++i];
+      int length = raw_bytes[++i];
       name = (unsigned char *) malloc (length);
-      unsigned int offset = i + length;
-      for (unsigned int j = 0; i < offset;) {
+      int offset = i + length;
+      for (int j = 0; i < offset;) {
         name[j++] = raw_bytes[++i];
         namesize++;
       }
+      continue;
     }
   }
 

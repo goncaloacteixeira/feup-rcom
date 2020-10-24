@@ -347,10 +347,7 @@ int llwrite(int fd, char *buffer, int length) {
   frame.bcc1 = frame.address ^ frame.control;
 
   int size_info = length;
-  unsigned char *information_frame = (unsigned char *)malloc(
-      size_info *
-      sizeof(
-          unsigned char)); /* changed so that we can adjust size dinamically*/
+  unsigned char *information_frame = (unsigned char *) malloc (size_info *sizeof(unsigned char));
   unsigned char bcc = 0xff;
   int i = 0;
   for (int j = 0; j < length; j++) {
@@ -439,7 +436,7 @@ int llwrite(int fd, char *buffer, int length) {
       printf("Timed out\nTrying again\n");
       alarm(RESET_ALARM);
     }
-    printf("Couldn't receive ack in time\n");
+    printf("Couldn't receive ACK in time\n");
   } while (flag && conta < 4);
 
   return ERROR;
