@@ -24,3 +24,17 @@ unsigned char* split_file(unsigned char* data, unsigned long index_start, unsign
   
   return frame;
 }
+
+void join_file(unsigned char* data, unsigned char* frame, unsigned long size, int index) {
+  for (int j = 0; j < size; j++) {
+    data[index + j] = frame[j];
+  }
+}
+
+void write_file(char* name, unsigned char* bytes, unsigned long size) {
+  FILE *fh = fopen (name, "wb");
+  if (fh != NULL) {
+      fwrite (bytes, sizeof (unsigned char), size, fh);
+      fclose (fh);
+  }
+}

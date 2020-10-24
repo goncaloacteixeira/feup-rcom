@@ -1,4 +1,7 @@
 #include "data_link.h"
+#include "files.h"
+
+file_t file;
 
 int main(int argc, char *argv[]) {
   if (argc != 2) {
@@ -26,6 +29,10 @@ int main(int argc, char *argv[]) {
       printf("Error reading\n");
     }
     control_packet_t packet = parse_control_packet(buffer, size);
+
+    file.size = array_to_number(packet.file_size, packet.filesize_size);
+    file.name = packet.file_name;
+
     print_control_packet(packet);
     if (packet.control == START) {
       state = 1;
@@ -33,11 +40,8 @@ int main(int argc, char *argv[]) {
   }
 
   // * DATA Packets
-  int message_size = 0;
-  unsigned char *full_message[64 /* max number of packets */];
-  for (int i = 0; i < 64; i++) {
-    full_message[i] = (unsigned char*) malloc(1024);
-  }
+  unsigned char *full_message = (unsigned char*) malloc (file.size);
+  int index = 0;
 
   while (state == 1) {
     memset(buffer, 0, sizeof(buffer));
@@ -53,18 +57,17 @@ int main(int argc, char *argv[]) {
     if (data.control != DATA) continue;
     
     print_data_packet(&data, FALSE);
-    memcpy(full_message[data.sequence], data.data, data.data_field_size);
-    message_size++;
+    join_file(full_message, data.data, data.data_field_size, index);
+    index += data.data_field_size;
   }
 
   // * STOP Control Packet
   if (state == 2) {
     control_packet_t packet = parse_control_packet(buffer, size);
     print_control_packet(packet);
-    printf("Displaying full message\n");
-    for (int i = 0; i < message_size; i++) {
-      printf("Message[%d]: %s\n", i, full_message[i]);
-    }
+
+    write_file("pinguim_clone.gif", full_message, file.size);
+    printf("Received file\n");
   }
 
   /* resets and closes the receiver fd for the port */
