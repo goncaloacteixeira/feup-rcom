@@ -28,3 +28,9 @@ typedef struct {
   unsigned char *raw_bytes;
   int raw_bytes_size;
 } control_packet_t;
+
+typedef struct {
+  unsigned char* data;
+  unsigned char* name;
+  unsigned long size;
+} file_t;

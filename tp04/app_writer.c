@@ -1,14 +1,17 @@
 #include "data_link.h"
+#include "files.h"
 
 extern int flag;
+FILE *fp;
+file_t file;
 
 control_packet_t generate_control_packet(int control) {
   control_packet_t c_packet;
   c_packet.control = control;
-  c_packet.file_name = "hello_there.zip";
+  c_packet.file_name = file.name;  
 
   unsigned char buf[sizeof(unsigned long)];
-  int num = number_to_array(256, buf);
+  int num = number_to_array(file.size, buf);
 
   c_packet.file_size = (unsigned char *)malloc(num);
   memcpy(c_packet.file_size, buf, num);
@@ -92,6 +95,11 @@ int main(int argc, char *argv[]) {
     exit(ERROR);
   }
 
+  fp = fopen("pinguim.gif", "rb");
+  file.name = "pinguim.gif";
+  file.size = get_file_size(fp);
+  file.data = read_file(fp, file.size);
+
   control_packet_t c_packet_start = generate_control_packet(START);
   control_packet_t c_packet_stop = generate_control_packet(STOP);
 
@@ -109,14 +117,24 @@ int main(int argc, char *argv[]) {
   }
   print_elapsed_time(start);
 
-  unsigned char *messages[4] = {"hello world", "hi there", "rcom is nice",
-                                "when it works"};
-  for (int i = 0; i < 4; i++) {
+  unsigned long bytes_left = file.size;
+  int index_start;
+  int index_end = -1;
+  int sequence = 0;
+  while (bytes_left != 0 && index_end != file.size - 1) {
     usleep(STOP_AND_WAIT);
+
+    index_start = index_end + 1;
+    if (bytes_left >= 1023) {
+      index_end = index_start + 1023;
+    } else {
+      index_end = index_start + bytes_left - 1;
+    }
+    bytes_left -= (index_end - index_start) + 1;
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 
-    data_packet_t data = generate_data_packet(messages[i], strlen(messages[i]), i);
+    data_packet_t data = generate_data_packet(split_file(file.data, index_start, index_end), index_end - index_start + 1, sequence++);
     print_data_packet(&data, FALSE);
 
     size = llwrite(transmiter_fd, data.raw_bytes, data.raw_bytes_size);

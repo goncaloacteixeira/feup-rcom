@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -pthread -Wno-pointer-sign
-DEPS = writenoncanonical.h noncanonical.h data_link.h utils.h
-OBJ = writenoncanonical.o noncanonical.o data_link.o utils.o
+DEPS = writenoncanonical.h noncanonical.h data_link.h utils.h files.h
+OBJ = writenoncanonical.o noncanonical.o data_link.o utils.o files.c
 TARGETS = app_writer app_reader
 
 all: app_writer app_reader

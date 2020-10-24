@@ -51,3 +51,4 @@
 #define STOP            0x3
 #define FILE_SIZE       0x0
 #define FILE_NAME       0x1
+#define PACKET_SIZE     1024
