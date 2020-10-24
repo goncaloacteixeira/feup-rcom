@@ -5,8 +5,14 @@ extern int flag;
 control_packet_t generate_control_packet(int control) {
   control_packet_t c_packet;
   c_packet.control = control;
-  c_packet.file_size = 0x25;
   c_packet.file_name = "hello_there.zip";
+
+  unsigned char buf[sizeof(unsigned long)];
+  int num = number_to_array(25658745, buf);
+
+  c_packet.file_size = (unsigned char*) malloc (num);
+  memcpy(c_packet.file_size, buf, num);
+  c_packet.filesize_size = num;
 
   int i = 0;
   // control packet
@@ -16,9 +22,12 @@ control_packet_t generate_control_packet(int control) {
   // file size
   c_packet.raw_bytes[i++] = FILE_SIZE;
   c_packet.raw_bytes = (unsigned char *)realloc(c_packet.raw_bytes, (i + 1));
-  c_packet.raw_bytes[i++] = sizeof(c_packet.file_size);
-  c_packet.raw_bytes = (unsigned char *)realloc(c_packet.raw_bytes, (i + 1));
-  c_packet.raw_bytes[i++] = c_packet.file_size;
+  c_packet.raw_bytes[i++] = c_packet.filesize_size;
+
+  for (int j = 0; j < c_packet.filesize_size; j++) {
+    c_packet.raw_bytes = (unsigned char *)realloc(c_packet.raw_bytes, (i + 1));
+    c_packet.raw_bytes[i++] = c_packet.file_size[j];
+  }
   c_packet.raw_bytes = (unsigned char *)realloc(c_packet.raw_bytes, (i + 1));
   // file name
   c_packet.raw_bytes[i++] = FILE_NAME;

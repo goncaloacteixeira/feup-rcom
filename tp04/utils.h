@@ -48,3 +48,16 @@ void print_message(information_frame_t frame, int coded);
  * @brief Takes fd and checks if it hasn't closed
  */
 int check_connection(int fd);
+
+/**
+ * @brief takes an array with length size, and converts it to an 8byte number
+ * array[0] = MSB ; array[size - 1] = LSB
+ */
+unsigned long array_to_number(unsigned char* buffer, unsigned int size);
+
+/**
+ * @brief Method to convert a 8byte number into an 8 byte char array
+ * array[0] = MSB ; array[return - 1] = LSB
+ * @return array's size
+ */
+unsigned int number_to_array(unsigned long num, unsigned char* buffer);

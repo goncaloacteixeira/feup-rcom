@@ -8,20 +8,25 @@ control_packet_t parse_control_packet(unsigned char *raw_bytes, int size) {
   char *name;
   int namesize = 0;
 
+  unsigned char* filesize;
+  int filesize_size = 0;
+
   for (int i = 1; i < size; i++) {
     if (raw_bytes[i] == FILE_SIZE) {
       int length = raw_bytes[++i];
       int offset = i + length;
-      for (int j = 1; i < offset;) {
-        packet.file_size += j * raw_bytes[++i];
-        j *= 256;
+      filesize = (unsigned char*) malloc (length);
+      printf("length: %d\n", length);
+      for (int k = 0; i < offset; k++) {
+        filesize[k] = raw_bytes[++i];
+        filesize_size++;
       }
     }
     if (raw_bytes[i] == FILE_NAME) {
-      int length = raw_bytes[++i];
+      unsigned int length = raw_bytes[++i];
       name = (unsigned char *) malloc (length);
-      int offset = i + length;
-      for (int j = 0; i < offset;) {
+      unsigned int offset = i + length;
+      for (unsigned int j = 0; i < offset;) {
         name[j++] = raw_bytes[++i];
         namesize++;
       }
@@ -32,6 +37,12 @@ control_packet_t parse_control_packet(unsigned char *raw_bytes, int size) {
   memcpy(packet.file_name, name, namesize);
   packet.file_name[namesize] = '\0';
   free(name);
+
+  packet.filesize_size = filesize_size;
+  packet.file_size = (unsigned char*) malloc (filesize_size);
+  memcpy(packet.file_size, filesize, filesize_size);
+  free(filesize);
+   
   return packet;
 }
 
@@ -63,7 +74,8 @@ void print_control_packet(control_packet_t packet) {
   default:
     break;
   }
-  printf("Size: %d (0x%x)\n", packet.file_size, packet.file_size);
+
+  printf("Size: %ld %#lx\n", array_to_number(packet.file_size, packet.filesize_size), array_to_number(packet.file_size, packet.filesize_size));
   printf("Name: %s\n", packet.file_name);
   printf("------------------------\n");
 }
@@ -136,4 +148,29 @@ int check_connection(int fd) {
     return -1;
   }
   return 0;
+}
+
+unsigned long array_to_number(unsigned char* buffer, unsigned int size) {
+  unsigned long value = 0;
+  int offset = 0;
+  for (int i = 0; i < size; i++) {
+    value |= buffer[i] << (8 * offset++);
+  }
+
+  return value;
+}
+
+unsigned int number_to_array(unsigned long num, unsigned char* buffer) {
+  unsigned int size = 0;
+
+  for (int i = 0; i < sizeof(unsigned long); i++) {
+    buffer[i] = (num >> (8 * i)) & 0xff;
+    size += 1;
+  }
+  for (int i = sizeof(unsigned long) - 1; i != 0; i--) {
+    if (buffer[i] != 0) break;
+    size--;
+  }
+
+  return size;
 }

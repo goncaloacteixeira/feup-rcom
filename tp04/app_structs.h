@@ -21,8 +21,9 @@ typedef struct {
 
 typedef struct {
   unsigned char control;
-  unsigned char file_size;
+  unsigned char *file_size;
   unsigned char *file_name;
+  unsigned int filesize_size;
 
   unsigned char *raw_bytes;
   int raw_bytes_size;
