@@ -22,6 +22,7 @@ int main(int argc, char *argv[]) {
 
   // * START Control Packet
   while (state == 0 && tries != TRIES) {
+    memset(buffer, 0, sizeof(buffer));
     size = llread(receiver_fd, buffer);
     if (size == ERROR) {
       printf("Error reading\n");
@@ -37,16 +38,19 @@ int main(int argc, char *argv[]) {
   if (tries == TRIES) {
     printf("Limit Tries Exceeded - ABORT\n");
     llclose(receiver_fd, RECEIVER);
-    return -1;
+    return ERROR;
   }
   tries = 0; // reseting tries counter
 
   // * DATA Packets
   int message_size = 0;
-  unsigned char **full_message;
-  full_message = (unsigned char **)malloc(1024);
+  unsigned char *full_message[64 /* max number of packets */];
+  for (int i = 0; i < 64; i++) {
+    full_message[i] = (unsigned char*) malloc(1024);
+  }
 
   while (state == 1 && tries != TRIES) {
+    memset(buffer, 0, sizeof(buffer));
     size = llread(receiver_fd, buffer);
     if (size == ERROR) {
       printf("Error reading\n");
@@ -60,8 +64,8 @@ int main(int argc, char *argv[]) {
     data_packet_t data = parse_data_packet(buffer, size);
     if (data.control != DATA)
       continue;
-    print_data_packet(data, FALSE);
-    full_message[data.sequence] = data.data;
+    print_data_packet(&data, FALSE);
+    memcpy(full_message[data.sequence], data.data, data.data_field_size);
     message_size++;
     tries = 0; // reseting tries because data went through
   }

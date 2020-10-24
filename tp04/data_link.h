@@ -13,7 +13,7 @@ static int current_frame = 0;
 * takes file descriptor (port) and sends a code msg in a
 * supervision frame
 */
-int send_supervision_frame(int fd, unsigned char msg);
+int send_supervision_frame(int fd, unsigned char msg, unsigned char address);
 
 /**
 * receives a supervision frame with controll as msg
@@ -37,6 +37,10 @@ int receive_set(int fd);
  * This function sends a SET Control frame and expects an UA
  */
 int send_set(int fd);
+
+int disconnect_writer(int fd);
+
+int disconnect_reader(int fd);
 
 /**
  * This function opens a port and returns the file descriptor

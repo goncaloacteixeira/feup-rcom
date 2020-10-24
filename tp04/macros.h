@@ -16,7 +16,7 @@
 #define _POSIX_SOURCE   1 /* POSIX compliant source */
 #define FALSE           0
 #define TRUE            1
-#define OK              1
+#define OK              0
 #define ERROR           -1
 #define TRIES           3
 #define TIMEOUT         3
@@ -24,9 +24,11 @@
 
 // Mesh Macros
 #define FLAG            0x7E
-#define A               0x03
+#define A_3             0x03
+#define A_1             0x01
 #define SET             0x03
 #define UA              0x07
+#define DISC            0x0B
 #define SET_BCC         A ^ SET
 #define UA_BCC          A ^ UA
 

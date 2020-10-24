@@ -58,7 +58,6 @@ data_packet_t generate_data_packet(unsigned char *buffer, int size, int sequence
   d_packet.raw_bytes[i++] = low;
   d_packet.raw_bytes = (unsigned char *)realloc(d_packet.raw_bytes, (i + 1));
   // data
-  d_packet.data = (unsigned char *)malloc(size);
   for (int j = 0; j < size; j++) {
     d_packet.data[j] = buffer[j];
     d_packet.raw_bytes[i++] = buffer[j];
@@ -118,9 +117,12 @@ int main(int argc, char *argv[]) {
 
   for (int i = 0; i < 4; i++) {
     usleep(STOP_AND_WAIT);
+
+    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+
     data_packet_t data =
         generate_data_packet(messages[i], strlen(messages[i]), i);
-    print_data_packet(data, FALSE);
+    print_data_packet(&data, FALSE);
     while (tries != TRIES) {
       int count = llwrite(transmiter_fd, data.raw_bytes, data.raw_bytes_size);
       if (count == ERROR) {
@@ -144,6 +146,8 @@ int main(int argc, char *argv[]) {
   usleep(STOP_AND_WAIT);
 
   print_control_packet(c_packet_stop);
+
+  clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 
   while (tries != TRIES) {
     int size = llwrite(transmiter_fd, c_packet_stop.raw_bytes,

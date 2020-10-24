@@ -25,7 +25,7 @@ void print_control_packet(control_packet_t packet);
 /**
  * @brief This function pretty-prints a data packet
  */
-void print_data_packet(data_packet_t packet, int full_info);
+void print_data_packet(data_packet_t* packet, int full_info);
 
 /**
  * @brief Method to pretty-print the elapsed time between two frames

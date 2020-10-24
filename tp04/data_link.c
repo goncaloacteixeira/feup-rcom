@@ -4,10 +4,10 @@ int reetransmit = 1;
 extern int flag;
 extern int conta;
 
-int send_supervision_frame(int fd, unsigned char msg) {
+int send_supervision_frame(int fd, unsigned char msg, unsigned char address) {
   unsigned char mesh[5];
   mesh[0] = FLAG;
-  mesh[1] = A;
+  mesh[1] = address;
   mesh[2] = msg;
   mesh[3] = mesh[1] ^ mesh[2];
   mesh[4] = FLAG;
@@ -22,6 +22,7 @@ unsigned char receive_acknowledgement(int fd) {
   int part = 0;
   unsigned char rcv_msg;
   unsigned char ctrl;
+  unsigned char address;
   printf("Reading ACK supervision frame...\n");
   while (part != 5) {
     int rd = read(fd, &rcv_msg, 1);
@@ -37,7 +38,8 @@ unsigned char receive_acknowledgement(int fd) {
       }
       break;
     case 1:
-      if (rcv_msg == A) {
+      if (rcv_msg == A_1 || rcv_msg == A_3) {
+        address = rcv_msg;
         part = 2;
         // printf("A: 0x%x\n",rcv_msg);
       } else {
@@ -57,7 +59,7 @@ unsigned char receive_acknowledgement(int fd) {
         part = 0;
       break;
     case 3:
-      if (rcv_msg == (A ^ ctrl)) {
+      if (rcv_msg == (address ^ ctrl)) {
         part = 4;
         // printf("Control BCC: 0x%x\n",rcv_msg);
       } else
@@ -81,6 +83,8 @@ int receive_supervision_frame(int fd, unsigned char msg) {
   // ! Remove comments if you want to debug the data being read
   int part = 0;
   unsigned char rcv_msg;
+  unsigned char address;
+
   printf("Reading supervision frame...\n");
   while (part != 5) {
     int rd = read(fd, &rcv_msg,1);
@@ -96,7 +100,8 @@ int receive_supervision_frame(int fd, unsigned char msg) {
       }
       break;
     case 1:
-      if (rcv_msg == A) {
+      if (rcv_msg == A_1 || rcv_msg == A_3) {
+        address = rcv_msg;
         part = 2;
         // printf("A: 0x%x\n",rcv_msg);
       } else {
@@ -114,7 +119,7 @@ int receive_supervision_frame(int fd, unsigned char msg) {
         part = 0;
       break;
     case 3:
-      if (rcv_msg == (A ^ msg)) {
+      if (rcv_msg == (address ^ msg)) {
         part = 4;
         // printf("Control BCC: 0x%x\n",rcv_msg);
       } else
@@ -137,7 +142,7 @@ int receive_supervision_frame(int fd, unsigned char msg) {
 int receive_set(int fd) {
   if (receive_supervision_frame(fd, SET) == 0) {
     printf("Sending UA reply...\n");
-    send_supervision_frame(fd, UA);
+    send_supervision_frame(fd, UA, A_3);
   }
   return 0;
 }
@@ -146,7 +151,7 @@ int send_set(int fd) {
   struct timespec start;
   do {
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-    if (send_supervision_frame(fd, SET) == -1) {
+    if (send_supervision_frame(fd, SET, A_3) == -1) {
       printf("Error writing SET\n");
       continue;
     }
@@ -178,20 +183,87 @@ int send_set(int fd) {
   return 0;
 }
 
+int disconnect_writer(int fd) {
+  struct timespec start;
+  do {
+    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+    if (send_supervision_frame(fd, DISC, A_3) == -1) {
+      printf("Error writing DISC\n");
+      continue;
+    }
+    alarm(TIMEOUT); // activa alarme de 3s
+    printf("Sent DISC frame\n");
+    flag = 0;
+    printf("Receiving DISC response...\n");
+    while (!flag) {
+      if (receive_supervision_frame(fd, DISC) == 0) {
+        reetransmit = 0;
+        break;
+      }
+    }
+
+    if (flag)
+      printf("Timed Out - Retrying\n");
+    print_elapsed_time(start);
+
+  } while (conta < 4 && flag);
+
+  alarm(RESET_ALARM);
+
+  if (conta == 4) {
+    reetransmit = 2;
+    printf("Gave up\n");
+    return -1;
+  }
+
+  printf("Sending UA ACK...\n");
+  return send_supervision_frame(fd, UA, A_1);
+}
+
+int disconnect_reader(int fd) {
+  struct timespec start;
+  do {
+    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+    alarm(TIMEOUT); // activa alarme de 3s
+    flag = 0;
+    printf("Receiving DISC from writer...\n");
+    while (!flag) {
+      if (receive_supervision_frame(fd, DISC) == 0) {
+        reetransmit = 0;
+        break;
+      }
+    }
+    printf("DISC received, sending DISC..\n");
+    if (send_supervision_frame(fd, DISC, A_3) == -1) {
+      printf("Error writing DISC\n");
+      continue;
+    }
+
+    if (flag)
+      printf("Timed Out - Retrying\n");
+    print_elapsed_time(start);
+
+  } while (conta < 4 && flag);
+
+  printf("Receiving UA...\n");
+
+  return receive_supervision_frame(fd, UA);
+}
+
 int send_acknowledgement(int fd, int frame, int accept) {
   printf("Sending acknowledgement...\n");
   if (frame == 0) {
     if (accept == 1) {
       // caso seja o frame 0 e seja aceite então pede o frame 1
-      send_supervision_frame(fd, C_RR1);
+      send_supervision_frame(fd, C_RR1, A_3);
     } else {
-      send_supervision_frame(fd, C_REJ0);
+      send_supervision_frame(fd, C_REJ0, A_3);
     }
   } else {
     if (accept == 1) {
-      send_supervision_frame(fd, C_RR0);
+      send_supervision_frame(fd, C_RR0, A_3);
     } else {
-      send_supervision_frame(fd, C_REJ1);
+      send_supervision_frame(fd, C_REJ1, A_3);
     }
   }
   return 0;
@@ -229,11 +301,35 @@ int llopen(int port, int type) {
 }
 
 int llclose(int fd, int type) {
-  if (type == TRANSMITTER)
-    return close_writer(fd);
-  else if (type == RECEIVER)
-    return close_reader(fd);
-  return -1;
+  printf("\nDisconnecting...\n");
+  if (type == TRANSMITTER) {
+    if (disconnect_writer(fd) == ERROR) {
+      perror("llclose: error disconnecting writer: ");
+      return ERROR;
+    }
+    if (close_writer(fd) != ERROR) {
+      printf("Writer Successfully Closed!\n");
+      return OK;
+    } else {
+      perror("llclose: writer not closed successfully: ");
+      return ERROR;
+    }
+  }
+    
+  else if (type == RECEIVER) {
+    if (disconnect_reader(fd) == ERROR) {
+      perror("llclose: error disconnecting reader: ");
+      return ERROR;
+    }
+    if (close_reader(fd) != ERROR) {
+      printf("Reader Successfully Closed!\n");
+      return OK;
+    } else {
+      perror("llclose: reader not closed successfully: ");
+      return ERROR;
+    }
+  }
+  return ERROR;
 }
 
 int llwrite(int fd, char *buffer, int length) {
@@ -243,7 +339,7 @@ int llwrite(int fd, char *buffer, int length) {
 
   information_frame_t frame; // to keep everything organized
 
-  frame.address = A;
+  frame.address = A_3;
 
   /* C byte - Controls package, alternating between 0 and 1*/
   frame.control = (current_frame == 0) ? C_I0 : C_I1;
@@ -423,7 +519,10 @@ int llread(int fd, char *buffer) {
     // print_message(information_frame, FALSE);
   }
 
-  memcpy(buffer, information_frame.data, information_frame.data_size);
+  for (i = 0; i < information_frame.data_size; i++) {
+    buffer[i] = information_frame.data[i];
+  }
+  
   free(information_frame.raw_bytes);
   free(information_frame.data);
   return (bccError == OK) ? information_frame.data_size : ERROR;
