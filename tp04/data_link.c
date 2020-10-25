@@ -394,7 +394,7 @@ int llwrite(int fd, char *buffer, int length) {
   frame.raw_bytes[j++] = FLAG;
 
   // ! remove next comment if you want to see the coded message being written
-  // print_message(frame, TRUE);
+  // print_message(&frame, TRUE);
   conta = 1;
   int count = -1;
 
@@ -505,7 +505,7 @@ int llread(int fd, char *buffer) {
 
   // ! remove *sleep* comments if you want to check what happens when ACK is not received in time
   // ! remove print_message comment if you want to see the data byte-by-byte
-  int bccError = verify_message(information_frame);
+  int bccError = verify_message(&information_frame);
   if (bccError == ERROR) {
     // sleep(15);
     send_acknowledgement(fd, current_frame, FALSE);
@@ -513,7 +513,7 @@ int llread(int fd, char *buffer) {
     // sleep(4);
     send_acknowledgement(fd, current_frame, TRUE);
     current_frame = (current_frame == 0) ? 1 : 0;
-    // print_message(information_frame, FALSE);
+    // print_message(&information_frame, FALSE);
   }
 
   for (i = 0; i < information_frame.data_size; i++) {

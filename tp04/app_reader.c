@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
     file.size = array_to_number(packet.file_size, packet.filesize_size);
     file.name = packet.file_name;
 
-    print_control_packet(packet);
+    print_control_packet(&packet);
     if (packet.control == START) {
       state = 1;
     }
@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
   // * STOP Control Packet
   if (state == 2) {
     control_packet_t packet = parse_control_packet(buffer, size);
-    print_control_packet(packet);
+    print_control_packet(&packet);
 
     write_file("pinguim_clone.gif", full_message, file.size);
     printf("Received file\n");

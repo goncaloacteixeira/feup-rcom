@@ -63,21 +63,21 @@ data_packet_t parse_data_packet(unsigned char *raw_bytes, int size) {
   return packet;
 }
 
-void print_control_packet(control_packet_t packet) {
+void print_control_packet(control_packet_t* packet) {
   printf("---- CONTROL PACKET ----\n");
-  switch (packet.control) {
+  switch (packet->control) {
   case START:
-    printf("Control: START (0x%x)\n", packet.control);
+    printf("Control: START (0x%x)\n", packet->control);
     break;
   case STOP:
-    printf("Control: STOP (0x%x)\n", packet.control);
+    printf("Control: STOP (0x%x)\n", packet->control);
     break;
   default:
     break;
   }
 
-  printf("Size: %ld %#lx\n", array_to_number(packet.file_size, packet.filesize_size), array_to_number(packet.file_size, packet.filesize_size));
-  printf("Name: %s\n", packet.file_name);
+  printf("Size: %ld %#lx\n", array_to_number(packet->file_size, packet->filesize_size), array_to_number(packet->file_size, packet->filesize_size));
+  printf("Name: %s\n", packet->file_name);
   printf("------------------------\n");
 }
 
@@ -97,38 +97,38 @@ void print_data_packet(data_packet_t* packet, int full_info) {
   printf("---------------------\n");
 }
 
-void print_message(information_frame_t frame, int stuffed) {
-  printf("Address: 0x%x\n", frame.address);
-  printf("Control: 0x%x\n", frame.control);
-  printf("BCC1: 0x%x\n", frame.bcc1);
+void print_message(information_frame_t* frame, int stuffed) {
+  printf("Address: 0x%x\n", frame->address);
+  printf("Control: 0x%x\n", frame->control);
+  printf("BCC1: 0x%x\n", frame->bcc1);
   int j = 0;
-  for (int i = 0; i < frame.data_size; i++) {
-    if (frame.data[i] == ESCAPE && stuffed) {
-      printf("DATA[%d]: 0x%x - ESCAPE\n", j++, frame.data[i++]);
-      if (frame.data[i] == ESCAPE_ESC) {
-        printf("DATA[%d]: 0x%x - ESCAPED ESCAPE\n", j++, frame.data[i]);
-      } else if (frame.data[i] == ESCAPE_FLAG) {
-        printf("DATA[%d]: 0x%x - ESCAPED FLAG\n", j++, frame.data[i]);
+  for (int i = 0; i < frame->data_size; i++) {
+    if (frame->data[i] == ESCAPE && stuffed) {
+      printf("DATA[%d]: 0x%x - ESCAPE\n", j++, frame->data[i++]);
+      if (frame->data[i] == ESCAPE_ESC) {
+        printf("DATA[%d]: 0x%x - ESCAPED ESCAPE\n", j++, frame->data[i]);
+      } else if (frame->data[i] == ESCAPE_FLAG) {
+        printf("DATA[%d]: 0x%x - ESCAPED FLAG\n", j++, frame->data[i]);
       }
     } else {
-      printf("DATA[%d]: 0x%x - %c (char)\n", j++, frame.data[i], frame.data[i]);
+      printf("DATA[%d]: 0x%x - %c (char)\n", j++, frame->data[i], frame->data[i]);
     }
   }
-  printf("BCC2: 0x%x\n", frame.bcc2);
-  printf("Message: %s - size: %d - strlen: %ld\n", frame.data, frame.data_size,
-         strlen(frame.data));
+  printf("BCC2: 0x%x\n", frame->bcc2);
+  printf("Message: %s - size: %d - strlen: %ld\n", frame->data, frame->data_size,
+         strlen(frame->data));
 }
 
-int verify_message(information_frame_t frame) {
-  if (frame.bcc1 != (frame.control ^ frame.address)) {
+int verify_message(information_frame_t* frame) {
+  if (frame->bcc1 != (frame->control ^ frame->address)) {
     return ERROR;
   }
   unsigned char bcc2 = 0xff;
-  for (int i = 0; i < frame.data_size; i++) {
-    bcc2 = frame.data[i] ^ bcc2;
+  for (int i = 0; i < frame->data_size; i++) {
+    bcc2 = frame->data[i] ^ bcc2;
   }
 
-  if (bcc2 != frame.bcc2) {
+  if (bcc2 != frame->bcc2) {
     return ERROR;
   }
 
@@ -174,4 +174,80 @@ unsigned int number_to_array(unsigned long num, unsigned char* buffer) {
   }
 
   return size;
+}
+
+control_packet_t generate_control_packet(int control, file_t* file) {
+  control_packet_t c_packet;
+  c_packet.control = control;
+  c_packet.file_name = file->name;  
+
+  unsigned char buf[sizeof(unsigned long)];
+  int num = number_to_array(file->size, buf);
+
+  c_packet.file_size = (unsigned char *)malloc(num);
+  memcpy(c_packet.file_size, buf, num);
+  c_packet.filesize_size = num;
+
+  int i = 0;
+  // control packet
+  c_packet.raw_bytes = (unsigned char *)malloc(i + 1);
+  c_packet.raw_bytes[i++] = c_packet.control;
+  c_packet.raw_bytes = (unsigned char *)realloc(c_packet.raw_bytes, (i + 1));
+  // file size
+  c_packet.raw_bytes[i++] = FILE_SIZE;
+  c_packet.raw_bytes = (unsigned char *)realloc(c_packet.raw_bytes, (i + 1));
+  c_packet.raw_bytes[i++] = c_packet.filesize_size;
+
+  for (int j = 0; j < c_packet.filesize_size; j++) {
+    c_packet.raw_bytes = (unsigned char *)realloc(c_packet.raw_bytes, (i + 1));
+    c_packet.raw_bytes[i++] = c_packet.file_size[j];
+  }
+  c_packet.raw_bytes = (unsigned char *)realloc(c_packet.raw_bytes, (i + 1));
+  // file name
+  c_packet.raw_bytes[i++] = FILE_NAME;
+  c_packet.raw_bytes = (unsigned char *)realloc(c_packet.raw_bytes, (i + 1));
+  c_packet.raw_bytes[i++] = strlen(c_packet.file_name);
+  c_packet.raw_bytes = (unsigned char *)realloc(c_packet.raw_bytes, (i + 1));
+  for (int j = 0; j < strlen(c_packet.file_name); j++) {
+    c_packet.raw_bytes[i++] = c_packet.file_name[j];
+    c_packet.raw_bytes = (unsigned char *)realloc(c_packet.raw_bytes, (i + 1));
+  }
+
+  c_packet.raw_bytes_size = i;
+
+  return c_packet;
+}
+
+data_packet_t generate_data_packet(unsigned char *buffer, int size, int sequence) {
+  data_packet_t d_packet;
+  d_packet.control = DATA;
+  d_packet.data_field_size = size;
+  d_packet.sequence = sequence;
+
+  int i = 0;
+  // control
+  d_packet.raw_bytes = (unsigned char *)malloc(i + 1);
+  d_packet.raw_bytes[i++] = d_packet.control;
+  d_packet.raw_bytes = (unsigned char *)realloc(d_packet.raw_bytes, (i + 1));
+  // sequence
+  d_packet.raw_bytes[i++] = d_packet.sequence;
+  d_packet.raw_bytes = (unsigned char *)realloc(d_packet.raw_bytes, (i + 1));
+  // size
+  unsigned int x = (unsigned int)size;
+  unsigned char high = (unsigned char)(x >> 8);
+  unsigned char low = x & 0xff;
+  d_packet.raw_bytes[i++] = high;
+  d_packet.raw_bytes = (unsigned char *)realloc(d_packet.raw_bytes, (i + 1));
+  d_packet.raw_bytes[i++] = low;
+  d_packet.raw_bytes = (unsigned char *)realloc(d_packet.raw_bytes, (i + 1));
+  // data
+  for (int j = 0; j < size; j++) {
+    d_packet.data[j] = buffer[j];
+    d_packet.raw_bytes[i++] = buffer[j];
+    d_packet.raw_bytes = (unsigned char *)realloc(d_packet.raw_bytes, (i + 1));
+  }
+
+  d_packet.raw_bytes_size = i;
+
+  return d_packet;
 }
