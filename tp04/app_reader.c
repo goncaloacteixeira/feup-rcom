@@ -66,7 +66,9 @@ int main(int argc, char *argv[]) {
     control_packet_t packet = parse_control_packet(buffer, size);
     print_control_packet(&packet);
 
-    write_file("pinguim_clone.gif", full_message, file.size);
+    char* name = (char*) malloc ((strlen(file.name) + 7) * sizeof(char));
+    sprintf(name, "cloned_%s", file.name);
+    write_file(name, full_message, file.size);
     printf("Received file\n");
   }
 

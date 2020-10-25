@@ -4,9 +4,9 @@
 extern int flag;
 
 int main(int argc, char *argv[]) {
-  if (argc != 2) {
-    printf("Usage: %s <number for serial port>\n", argv[0]);
-    printf("\nExample: %s 11\t-\tfor '/dev/ttyS11'\n", argv[0]);
+  if (argc != 3) {
+    printf("Usage: %s <number for serial port> <filename>\n", argv[0]);
+    printf("\nExample: %s 11\t-\tfor '/dev/ttyS11' pinguim.gif\n", argv[0]);
     return -1;
   }
 
@@ -20,8 +20,10 @@ int main(int argc, char *argv[]) {
     exit(ERROR);
   }
 
-  fp = fopen("pinguim.gif", "rb");
-  file.name = "pinguim.gif";
+  char* filename = argv[2];
+
+  fp = fopen(filename, "rb");
+  file.name = filename;
   file.size = get_file_size(fp);
   file.data = read_file(fp, file.size);
 
