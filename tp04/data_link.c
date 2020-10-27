@@ -14,7 +14,7 @@ int send_supervision_frame(int fd, unsigned char msg, unsigned char address) {
   int err = write(fd, mesh, 5);
   if (!(err == 5))
     return ERROR;
-  return 0;
+  return OK;
 }
 
 unsigned char receive_acknowledgement(int fd) {
@@ -233,6 +233,7 @@ int disconnect_reader(int fd) {
         break;
       }
     }
+    alarm(RESET_ALARM);
     printf("DISC received, sending DISC..\n");
     if (send_supervision_frame(fd, DISC, A_3) == -1) {
       printf("Error writing DISC\n");

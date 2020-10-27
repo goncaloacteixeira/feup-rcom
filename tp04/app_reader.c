@@ -42,6 +42,7 @@ int main(int argc, char *argv[]) {
   // * DATA Packets
   unsigned char *full_message = (unsigned char*) malloc (file.size);
   int index = 0;
+  int current_sequence = -1;
 
   while (state == 1) {
     memset(buffer, 0, sizeof(buffer));
@@ -58,7 +59,12 @@ int main(int argc, char *argv[]) {
     
     print_data_packet(&data, FALSE);
     join_file(full_message, data.data, data.data_field_size, index);
-    index += data.data_field_size;
+
+    // * caso o numero de sequencia seja diferente do anterior deve atualizar o index
+    if (current_sequence != data.sequence) {
+      current_sequence = data.sequence;
+      index += data.data_field_size;
+    }
   }
 
   // * STOP Control Packet

@@ -64,7 +64,11 @@ int main(int argc, char *argv[]) {
     data_packet_t data = generate_data_packet(split_file(file.data, index_start, index_end), index_end - index_start + 1, sequence++);
     print_data_packet(&data, FALSE);
 
-    size = llwrite(transmiter_fd, data.raw_bytes, data.raw_bytes_size);
+    /* caso o write não seja bem sucedido tentar de novo */
+    while ((size = llwrite(transmiter_fd, data.raw_bytes, data.raw_bytes_size)) == ERROR) { 
+      usleep(STOP_AND_WAIT);
+    }
+    
     if (size == ERROR) {
       printf("Error writing Data Packet, aborting...\n");
       llclose(transmiter_fd, TRANSMITTER);
