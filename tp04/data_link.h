@@ -1,8 +1,17 @@
 #include "utils.h"
 
+/** \addtogroup MACROS
+ * @{
+ */
 #define TRANSMITTER 0
 #define RECEIVER 1
-#define STOP_AND_WAIT 50
+#define STOP_AND_WAIT 10000
+/** @} */
+
+/**
+ * \defgroup DATALINKLAYER
+ * @{
+ */
 
 /**
  * current I-Frame
@@ -10,8 +19,7 @@
 static int current_frame = 0;
 
 /**
-* takes file descriptor (port) and sends a code msg in a
-* supervision frame
+* @brief takes file descriptor (port) and sends a code msg in a supervision frame
 */
 int send_supervision_frame(int fd, unsigned char msg, unsigned char address);
 
@@ -21,10 +29,14 @@ int send_supervision_frame(int fd, unsigned char msg, unsigned char address);
 int receive_supervision_frame(int fd, unsigned char msg);
 
 /**
-* receives a ACK frame and returns it's control byte
+* @brief Receives a ACK frame and returns it's control byte
 */
 unsigned char receive_acknowledgement(int fd);
 
+/**
+ * @brief Method to send an ACK message
+ * Takes a frame number (0, 1) and a flag (0, 1) and sends the ACK value accordingly 
+ */
 int send_acknowledgement(int fd, int frame, int accept);
 
 /**
@@ -34,23 +46,32 @@ int send_acknowledgement(int fd, int frame, int accept);
 int receive_set(int fd);
 
 /**
- * This function sends a SET Control frame and expects an UA
+ * @brief This function sends a SET Control frame and expects an UA
  */
 int send_set(int fd);
 
+/**
+ * @brief Disconnect method for writer
+ * Sends DISC, expects DISC, sends UA to receiver
+ */
 int disconnect_writer(int fd);
 
+/**
+ * @brief Disconnect method for reader
+ * Expects DISC, sends DISC, expects UA from emissor
+ */
 int disconnect_reader(int fd);
 
 /**
- * This function opens a port and returns the file descriptor
+ * @brief This function opens a port and starts the connection
  * @param port port number to be open
  * @param type RECEIVER or TRANSMITTOR
+ * @return file descriptor for the port
  */
 int llopen(int port, int type);
 
 /**
- * Same as llopen but this one closes the fd
+ * @brief Same as llopen but this one disconnects writer or reader and closes the descriptor
  */
 int llclose(int fd, int type);
 
@@ -68,3 +89,5 @@ int llwrite(int fd, char *buffer, int length);
  * @returns -1 if error or number of bytes read for success
  */
 int llread(int fd, char *buffer);
+
+/** @} */
