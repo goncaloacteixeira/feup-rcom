@@ -64,7 +64,7 @@ data_packet_t parse_data_packet(unsigned char *raw_bytes, int size) {
 }
 
 void print_control_packet(control_packet_t* packet) {
-  printf("---- CONTROL PACKET ----\n");
+  printf("\n---- CONTROL PACKET ----\n");
   switch (packet->control) {
   case START:
     printf("Control: START (0x%x)\n", packet->control);
@@ -121,19 +121,47 @@ void print_message(information_frame_t* frame, int stuffed) {
 
 int verify_message(information_frame_t* frame) {
   if (frame->bcc1 != (frame->control ^ frame->address)) {
+    printf("Error in BCC1\n");
     return ERROR;
   }
-  unsigned char bcc2 = 0xff;
+  unsigned char bcc2 = 0x00;
+  //printf("BCC2: 0x%x\tFRAME: 0x%x\tFRAME BCC2: 0x%x\n",bcc2,frame->data[0],frame->bcc2);
   for (int i = 0; i < frame->data_size; i++) {
-    bcc2 = frame->data[i] ^ bcc2;
+    //printf("BCC2: 0x%x\tFRAME: 0x%x\n",bcc2,frame->data[i]);
+    bcc2 ^= frame->data[i];
   }
 
   if (bcc2 != frame->bcc2) {
+    //printf("BCC2: 0x%x\tFRAME BCC2: 0x%x\n",bcc2,frame->bcc2);
+    printf("Error in BCC2\n");
     return ERROR;
   }
 
   return OK;
 }
+
+void clearProgressBar() {
+    int i;
+    for (i = 0; i < NUM_BACKSPACES; ++i) {
+        fprintf(stdout, "\b");
+    }
+    fflush(stdout);
+}
+
+void printProgressBar(int progress, int total) {
+    int i, percentage = (int)((((double)progress) / total) * 100);
+    int num_separators = (int)((((double)progress) / total) * PROGRESS_BAR_SIZE);;
+    fprintf(stdout, "[");
+    for (i = 0; i < num_separators; ++i) {
+        fprintf(stdout, "%c", SEPARATOR_CHAR);
+    }
+    for (; i < PROGRESS_BAR_SIZE; ++i) {
+        fprintf(stdout, "%c", EMPTY_CHAR);
+    }
+    fprintf(stdout, "]  %2d%%  ", percentage);
+    fflush(stdout);
+}
+
 
 void print_elapsed_time(struct timespec start) {
   struct timespec end;
@@ -214,7 +242,6 @@ control_packet_t generate_control_packet(int control, file_t* file) {
   }
 
   c_packet.raw_bytes_size = i;
-
   return c_packet;
 }
 
@@ -248,6 +275,5 @@ data_packet_t generate_data_packet(unsigned char *buffer, int size, int sequence
   }
 
   d_packet.raw_bytes_size = i;
-
   return d_packet;
 }

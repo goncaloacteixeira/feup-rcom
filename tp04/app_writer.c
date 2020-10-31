@@ -40,8 +40,15 @@ int main(int argc, char *argv[]) {
   if (size == ERROR) {
     printf("Error writing START Control Packet, aborting...\n");
     llclose(transmiter_fd, TRANSMITTER);
+    free(c_packet_start.file_size);
+    free(c_packet_start.raw_bytes);
+    free(c_packet_stop.file_size);
+    free(c_packet_stop.raw_bytes);
+    free(file.data);
     return ERROR;
   }
+  free(c_packet_start.file_size);
+  free(c_packet_start.raw_bytes);
   print_elapsed_time(start);
 
   unsigned long bytes_left = file.size;
@@ -52,8 +59,8 @@ int main(int argc, char *argv[]) {
     usleep(STOP_AND_WAIT);
 
     index_start = index_end + 1;
-    if (bytes_left >= 1023) {
-      index_end = index_start + 1023;
+    if (bytes_left >= PACKET_SIZE-1) {
+      index_end = index_start + PACKET_SIZE-1;
     } else {
       index_end = index_start + bytes_left - 1;
     }
@@ -61,21 +68,27 @@ int main(int argc, char *argv[]) {
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 
-    data_packet_t data = generate_data_packet(split_file(file.data, index_start, index_end), index_end - index_start + 1, sequence++);
-    print_data_packet(&data, FALSE);
+    unsigned char* frame = split_file(file.data, index_start, index_end);
+    data_packet_t data = generate_data_packet(frame, index_end - index_start + 1, sequence++);
+    //print_data_packet(&data, FALSE);
 
+    printProgressBar(file.size-bytes_left,file.size);
     /* caso o write não seja bem sucedido tentar de novo */
     while ((size = llwrite(transmiter_fd, data.raw_bytes, data.raw_bytes_size)) == ERROR) { 
       usleep(STOP_AND_WAIT);
     }
-    
+    clearProgressBar();
+
+    free(frame);
+    free(data.raw_bytes);
     if (size == ERROR) {
       printf("Error writing Data Packet, aborting...\n");
       llclose(transmiter_fd, TRANSMITTER);
       return ERROR;
     }
-    print_elapsed_time(start);
+    //print_elapsed_time(start);
   }
+  printProgressBar(1,1);
 
   usleep(STOP_AND_WAIT);
   print_control_packet(&c_packet_stop);
@@ -86,6 +99,8 @@ int main(int argc, char *argv[]) {
     llclose(transmiter_fd, TRANSMITTER);
     return ERROR;
   }
+  free(c_packet_stop.file_size);
+  free(c_packet_stop.raw_bytes);
 
   usleep(STOP_AND_WAIT);
   print_elapsed_time(start);

@@ -27,6 +27,8 @@ int main(int argc, char *argv[]) {
     memset(buffer, 0, sizeof(buffer));
     while ((size = llread(receiver_fd, buffer)) == ERROR) {
       printf("Error reading\n");
+      llclose(receiver_fd, RECEIVER);
+      return ERROR;
     }
     control_packet_t packet = parse_control_packet(buffer, size);
 

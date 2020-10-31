@@ -23,11 +23,11 @@ unsigned char receive_acknowledgement(int fd) {
   unsigned char rcv_msg;
   unsigned char ctrl;
   unsigned char address;
-  printf("Reading ACK supervision frame...\n");
+  //printf("Reading ACK supervision frame...\n");
   while (part != 5) {
     int rd = read(fd, &rcv_msg, 1);
     if (rd == -1 && errno == EINTR) {
-      printf("READ failed\n");
+      //printf("READ failed\n");
       return 2;
     }
     switch (part) {
@@ -334,9 +334,9 @@ int llclose(int fd, int type) {
 }
 
 int llwrite(int fd, char *buffer, int length) {
-  printf("Sending data...\n");
+  //printf("Sending data...\n");
   // printf("Message: %s\n", buffer);
-  printf("Coding message...\n");
+  //printf("Coding message...\n");
 
   information_frame_t frame; // to keep everything organized
 
@@ -349,7 +349,7 @@ int llwrite(int fd, char *buffer, int length) {
 
   int size_info = length;
   unsigned char *information_frame = (unsigned char *) malloc (size_info *sizeof(unsigned char));
-  unsigned char bcc = 0xff;
+  unsigned char bcc = 0x00;
   int i = 0;
   for (int j = 0; j < length; j++) {
     /* Data stuffing and buffer size adjusting*/
@@ -395,15 +395,17 @@ int llwrite(int fd, char *buffer, int length) {
   frame.raw_bytes[j++] = FLAG;
 
   // ! remove next comment if you want to see the coded message being written
-  // print_message(&frame, TRUE);
+  //print_message(&frame, TRUE);
   conta = 1;
   int count = -1;
 
   do {
     if ((count = write(fd, frame.raw_bytes, j)) != ERROR) {
-      printf("Message sent! Waiting for ACK\n");
+      //printf("Message sent! Waiting for ACK\n");
     } else {
-      printf("Message not sent!\n");
+      //printf("Message not sent!\n");
+      free(information_frame);
+      free(frame.raw_bytes);
       return ERROR;
       // adicionei esta linha, pq caso não escreva corretamente 
       // deve retornar -1 para escrever de novo
@@ -413,33 +415,40 @@ int llwrite(int fd, char *buffer, int length) {
 
     unsigned char ack = receive_acknowledgement(fd);
     if (ack == C_REJ0 || ack == C_REJ1) {
-      printf("Received negative ACK\n");
+      //printf("Received negative ACK\n");
       alarm(RESET_ALARM);
+      free(information_frame);
+      free(frame.raw_bytes);
       return ERROR;
     }
     // Retransmition
     if ((ack == C_RR0 && current_frame == 0) ||
         (ack == C_RR1 && current_frame == 1)) {
-      printf("Received positive ACK (retransmition)\n");
+      //printf("Received positive ACK (retransmition)\n");
       alarm(RESET_ALARM);
       // returns error but to the application only means it has to
       // send the same frame again
+      free(information_frame);
+      free(frame.raw_bytes);
       return ERROR; 
     }
 
     if ((ack == C_RR0 && current_frame == 1) ||
         (ack == C_RR1 && current_frame == 0)) {
-      printf("Received positive ACK\n");
+      //printf("Received positive ACK\n");
       alarm(RESET_ALARM);
       current_frame = (current_frame == 0) ? 1 : 0; // changes the current frame
+      free(information_frame);
+      free(frame.raw_bytes);
       return count;
     } else {
-      printf("Timed out\nTrying again\n");
+      //printf("Timed out\nTrying again\n");
       alarm(RESET_ALARM);
     }
-    printf("Couldn't receive ACK in time\n");
+    //printf("Couldn't receive ACK in time\n");
   } while (flag && conta < 4);
-
+  free(information_frame);
+  free(frame.raw_bytes);
   return ERROR;
 }
 
@@ -503,7 +512,7 @@ int llread(int fd, char *buffer) {
   }
   information_frame.bcc2 = information_frame.raw_bytes[data_size - 1];
   information_frame.data_size = data_size - 4;
-
+  
   // ! remove *sleep* comments if you want to check what happens when ACK is not received in time
   // ! remove print_message comment if you want to see the data byte-by-byte
   int bccError = verify_message(&information_frame);
@@ -514,7 +523,7 @@ int llread(int fd, char *buffer) {
     // sleep(4);
     send_acknowledgement(fd, current_frame, TRUE);
     current_frame = (current_frame == 0) ? 1 : 0;
-    // print_message(&information_frame, FALSE);
+    //print_message(&information_frame, FALSE);
   }
 
   for (i = 0; i < information_frame.data_size; i++) {

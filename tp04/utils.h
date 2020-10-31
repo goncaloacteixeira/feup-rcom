@@ -47,6 +47,12 @@ void print_elapsed_time(struct timespec start);
  */
 int verify_message(information_frame_t* frame);
 
+
+
+void clearProgressBar();
+
+void printProgressBar(int progress, int total);
+
 /**
  * @brief Method to pretty-print an information frame details
  */
