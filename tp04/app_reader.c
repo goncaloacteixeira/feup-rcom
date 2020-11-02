@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
     
     if (data.control != DATA) continue;
     
-    //print_data_packet(&data, TRUE);
+    print_data_packet(&data, FALSE);
     join_file(full_message, data.data, data.data_field_size, index);
 
     // * caso o numero de sequencia seja diferente do anterior deve atualizar o index

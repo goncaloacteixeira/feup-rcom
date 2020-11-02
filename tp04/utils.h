@@ -47,10 +47,14 @@ void print_elapsed_time(struct timespec start);
  */
 int verify_message(information_frame_t* frame);
 
-
-
+// ! AGRADECER AO PEDRO JORJE E AO ANTONIO
+/**
+ * Domo arigato Seixas kun uwu owo
+ */
 void clearProgressBar();
-
+/**
+ * Domo arigato Seixas kun uwu owo
+ */
 void printProgressBar(int progress, int total);
 
 /**

@@ -49,7 +49,6 @@ int main(int argc, char *argv[]) {
   }
   free(c_packet_start.file_size);
   free(c_packet_start.raw_bytes);
-  print_elapsed_time(start);
 
   unsigned long bytes_left = file.size;
   int index_start;

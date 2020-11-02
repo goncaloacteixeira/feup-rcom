@@ -148,9 +148,9 @@ int receive_set(int fd) {
 }
 
 int send_set(int fd) {
-  struct timespec start;
+  //struct timespec start;
   do {
-    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+    //clock_gettime(CLOCK_MONOTONIC_RAW, &start);
     if (send_supervision_frame(fd, SET, A_3) == -1) {
       printf("Error writing SET\n");
       continue;
@@ -168,7 +168,7 @@ int send_set(int fd) {
 
     if (flag)
       printf("Timed Out - Retrying\n");
-    print_elapsed_time(start);
+    //print_elapsed_time(start);
 
   } while (conta < 4 && flag);
 
@@ -184,9 +184,9 @@ int send_set(int fd) {
 }
 
 int disconnect_writer(int fd) {
-  struct timespec start;
+  //struct timespec start;
   do {
-    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+    //clock_gettime(CLOCK_MONOTONIC_RAW, &start);
     if (send_supervision_frame(fd, DISC, A_3) == -1) {
       printf("Error writing DISC\n");
       continue;
@@ -204,7 +204,7 @@ int disconnect_writer(int fd) {
 
     if (flag)
       printf("Timed Out - Retrying\n");
-    print_elapsed_time(start);
+    //print_elapsed_time(start);
 
   } while (conta < 4 && flag);
 
@@ -221,9 +221,9 @@ int disconnect_writer(int fd) {
 }
 
 int disconnect_reader(int fd) {
-  struct timespec start;
+  //struct timespec start;
   do {
-    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+    //clock_gettime(CLOCK_MONOTONIC_RAW, &start);
     alarm(TIMEOUT); // activa alarme de 3s
     flag = 0;
     printf("Receiving DISC from writer...\n");
@@ -242,7 +242,7 @@ int disconnect_reader(int fd) {
 
     if (flag)
       printf("Timed Out - Retrying\n");
-    print_elapsed_time(start);
+    //print_elapsed_time(start);
 
   } while (conta < 4 && flag);
 
