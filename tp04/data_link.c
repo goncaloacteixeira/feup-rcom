@@ -252,7 +252,7 @@ int disconnect_reader(int fd) {
 }
 
 int send_acknowledgement(int fd, int frame, int accept) {
-  printf("Sending acknowledgement...\n");
+  //printf("Sending acknowledgement...\n");
   if (frame == 0) {
     if (accept == 1) {
       // caso seja o frame 0 e seja aceite então pede o frame 1
@@ -337,7 +337,6 @@ int llwrite(int fd, char *buffer, int length) {
   //printf("Sending data...\n");
   // printf("Message: %s\n", buffer);
   //printf("Coding message...\n");
-
   information_frame_t frame; // to keep everything organized
 
   frame.address = A_3;
@@ -348,17 +347,20 @@ int llwrite(int fd, char *buffer, int length) {
   frame.bcc1 = frame.address ^ frame.control;
 
   int size_info = length;
+  //printf("SENT DATA_SIZE: %d\n",size_info);
   unsigned char *information_frame = (unsigned char *) malloc (size_info *sizeof(unsigned char));
   unsigned char bcc = 0x00;
-  int i = 0;
+  int i = 0,n=0;
   for (int j = 0; j < length; j++) {
     /* Data stuffing and buffer size adjusting*/
     if (buffer[j] == ESCAPE) {
+      n++;
       information_frame =
           (unsigned char *)realloc(information_frame, ++size_info);
       information_frame[i++] = ESCAPE;
       information_frame[i++] = ESCAPE_ESC;
     } else if (buffer[j] == FLAG) {
+      n++;
       information_frame =
           (unsigned char *)realloc(information_frame, ++size_info);
       information_frame[i++] = ESCAPE;
@@ -373,7 +375,7 @@ int llwrite(int fd, char *buffer, int length) {
   frame.bcc2 = bcc;               /* this BCC2 is not stuffed yet and it will be displayed *unstuffed* */
 
   /* Saving all data to be transmitted to .raw_bytes */
-  frame.raw_bytes = (unsigned char *)malloc((frame.data_size + 10) * sizeof(unsigned char *));
+  frame.raw_bytes = (unsigned char *)malloc((frame.data_size + 10));
   int j = 0;
   frame.raw_bytes[j++] = FLAG;
   frame.raw_bytes[j++] = frame.address;
@@ -384,11 +386,15 @@ int llwrite(int fd, char *buffer, int length) {
   }
   /* BCC2 stuffing*/
   if (bcc == ESCAPE) {
+    n++;
     frame.raw_bytes[j++] = ESCAPE;
     frame.raw_bytes[j++] = ESCAPE_ESC;
+    //printf("STUFFED BCC\n");
   } else if (bcc == FLAG) {
+    n++;
     frame.raw_bytes[j++] = ESCAPE;
     frame.raw_bytes[j++] = ESCAPE_FLAG;
+    //printf("STUFFED BCC\n");
   } else
     frame.raw_bytes[j++] = bcc;
 
@@ -398,6 +404,8 @@ int llwrite(int fd, char *buffer, int length) {
   //print_message(&frame, TRUE);
   conta = 1;
   int count = -1;
+  //printf("SENT DATA_SIZE AFTER STUFFING: %d\n",j);
+  //printf("STUFFED BYTES: %d\n",n);
 
   do {
     if ((count = write(fd, frame.raw_bytes, j)) != ERROR) {
@@ -459,7 +467,7 @@ int llread(int fd, char *buffer) {
   int i = 0;
   int part = 0;
   unsigned char rcv_msg;
-  printf("Reading...\n");
+  //printf("Reading...\n");
 
   // * lógica: processar os dados todos em raw bytes, depois fazer o unstuffing,
   // * e depois fazer o tratamento dos dados
@@ -483,12 +491,13 @@ int llread(int fd, char *buffer) {
   }
 
   int data_size = i;
+  //printf("RECEIVED DATA_SIZE: %d\n",data_size);
   /* UNSTUFFING BYTES */
-  int j = 0, p = 0;
+  int j = 0, p = 0, n=0;
   for (; j < i && p < i; j++) {
     if (information_frame.raw_bytes[p] == ESCAPE) {
-      information_frame.raw_bytes =
-          (unsigned char *)realloc(information_frame.raw_bytes, --data_size);
+      n++;
+      --data_size;
       if (information_frame.raw_bytes[p + 1] == ESCAPE_ESC)
         information_frame.raw_bytes[j] = ESCAPE;
       else if (information_frame.raw_bytes[p + 1] == ESCAPE_FLAG)
@@ -499,7 +508,9 @@ int llread(int fd, char *buffer) {
       p++;
     }
   }
-
+  information_frame.raw_bytes =
+          (unsigned char *)realloc(information_frame.raw_bytes, data_size);
+  //printf("AHHHHHHHHHHH: %d\n",n);
   information_frame.data =
       (unsigned char *)malloc((data_size - 4) * sizeof(unsigned char));
 
@@ -512,6 +523,7 @@ int llread(int fd, char *buffer) {
   }
   information_frame.bcc2 = information_frame.raw_bytes[data_size - 1];
   information_frame.data_size = data_size - 4;
+  //printf("DATA_SIZE: %d\n",data_size);
   
   // ! remove *sleep* comments if you want to check what happens when ACK is not received in time
   // ! remove print_message comment if you want to see the data byte-by-byte
@@ -519,11 +531,12 @@ int llread(int fd, char *buffer) {
   if (bccError == ERROR) {
     // sleep(15);
     send_acknowledgement(fd, current_frame, FALSE);
+    //print_message(&information_frame, TRUE);
   } else {
     // sleep(4);
     send_acknowledgement(fd, current_frame, TRUE);
     current_frame = (current_frame == 0) ? 1 : 0;
-    //print_message(&information_frame, FALSE);
+    //print_message(&information_frame, TRUE);
   }
 
   for (i = 0; i < information_frame.data_size; i++) {

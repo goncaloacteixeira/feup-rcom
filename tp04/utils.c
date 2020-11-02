@@ -132,7 +132,7 @@ int verify_message(information_frame_t* frame) {
   }
 
   if (bcc2 != frame->bcc2) {
-    //printf("BCC2: 0x%x\tFRAME BCC2: 0x%x\n",bcc2,frame->bcc2);
+    printf("BCC2: 0x%x\tFRAME BCC2: 0x%x FRAME_DATA_SIZE: %d\n",bcc2,frame->bcc2,frame->data_size);
     printf("Error in BCC2\n");
     return ERROR;
   }

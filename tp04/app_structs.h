@@ -26,7 +26,7 @@ typedef struct {
   unsigned char control;    /**< @brief The control byte - [DATA] */
   unsigned char sequence;   /**< @brief The sequence byte - index on global data */
   int data_field_size;      /**< @brief The size of the data array - [1..PACKET_SIZE] */
-  unsigned char data[1024]; /**< @brief The data array */
+  unsigned char data[2*PACKET_SIZE]; /**< @brief The data array */
 
   unsigned char *raw_bytes; /**< @brief The array containing unprocessed bytes */
   int raw_bytes_size;       /**< @brief The size of the raw_bytes array */

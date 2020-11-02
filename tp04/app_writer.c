@@ -59,8 +59,8 @@ int main(int argc, char *argv[]) {
     usleep(STOP_AND_WAIT);
 
     index_start = index_end + 1;
-    if (bytes_left >= PACKET_SIZE-1) {
-      index_end = index_start + PACKET_SIZE-1;
+    if (bytes_left >= PACKET_SIZE-5) {
+      index_end = index_start + PACKET_SIZE-5;
     } else {
       index_end = index_start + bytes_left - 1;
     }
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
 
     unsigned char* frame = split_file(file.data, index_start, index_end);
     data_packet_t data = generate_data_packet(frame, index_end - index_start + 1, sequence++);
-    //print_data_packet(&data, FALSE);
+    //print_data_packet(&data, TRUE);
 
     printProgressBar(file.size-bytes_left,file.size);
     /* caso o write não seja bem sucedido tentar de novo */
