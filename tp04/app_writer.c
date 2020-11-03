@@ -58,8 +58,8 @@ int main(int argc, char *argv[]) {
     usleep(STOP_AND_WAIT);
 
     index_start = index_end + 1;
-    if (bytes_left >= PACKET_SIZE-5) {
-      index_end = index_start + PACKET_SIZE-5;
+    if (bytes_left >= PACKET_SIZE-1) {
+      index_end = index_start + PACKET_SIZE-1;
     } else {
       index_end = index_start + bytes_left - 1;
     }

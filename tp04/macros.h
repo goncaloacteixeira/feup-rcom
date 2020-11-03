@@ -55,7 +55,7 @@
 #define STOP            0x3
 #define FILE_SIZE       0x0
 #define FILE_NAME       0x1
-#define PACKET_SIZE     4096 /**< @brief Maximum packet size in bytes */
+#define PACKET_SIZE     1024 /**< @brief Maximum packet size in bytes */
 
 
 #define PROGRESS_BAR_SIZE   30

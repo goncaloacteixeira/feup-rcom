@@ -22,6 +22,8 @@ int main(int argc, char *argv[]) {
 
   int state = 0;
 
+  printf("Packet Size: %d\n", PACKET_SIZE);
+
   // * START Control Packet
   while (state == 0) {
     memset(buffer, 0, sizeof(buffer));

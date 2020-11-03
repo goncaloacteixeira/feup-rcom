@@ -5,7 +5,7 @@
  */
 #define TRANSMITTER 0
 #define RECEIVER 1
-#define STOP_AND_WAIT 5000
+#define STOP_AND_WAIT 1
 /** @} */
 
 /**
