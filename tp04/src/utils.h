@@ -47,13 +47,14 @@ void print_elapsed_time(struct timespec start);
  */
 int verify_message(information_frame_t* frame);
 
-// ! AGRADECER AO PEDRO JORJE E AO ANTONIO
+// Créditos ao grupo 4 da turma 3
+
 /**
- * Domo arigato Seixas kun uwu owo
+ * @brief Method to clear progress bar
  */
 void clearProgressBar();
 /**
- * Domo arigato Seixas kun uwu owo
+ * @brief Method to print the progress bar
  */
 void printProgressBar(int progress, int total);
 
