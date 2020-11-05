@@ -65,8 +65,6 @@ int main(int argc, char *argv[]) {
     }
     bytes_left -= (index_end - index_start) + 1;
 
-    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-
     unsigned char* frame = split_file(file.data, index_start, index_end);
     data_packet_t data = generate_data_packet(frame, index_end - index_start + 1, sequence++);
     //print_data_packet(&data, TRUE);
@@ -85,13 +83,11 @@ int main(int argc, char *argv[]) {
       llclose(transmiter_fd, TRANSMITTER);
       return ERROR;
     }
-    //print_elapsed_time(start);
   }
   printProgressBar(1,1);
 
   usleep(STOP_AND_WAIT);
   print_control_packet(&c_packet_stop);
-  clock_gettime(CLOCK_MONOTONIC_RAW, &start);
   size = llwrite(transmiter_fd, c_packet_stop.raw_bytes, c_packet_stop.raw_bytes_size);
   if (size == ERROR) {
     printf("Error writing STOP Control Packet, aborting...\n");

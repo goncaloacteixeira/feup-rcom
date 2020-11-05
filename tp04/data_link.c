@@ -492,6 +492,14 @@ int llread(int fd, char *buffer) {
 
   int data_size = i;
   //printf("RECEIVED DATA_SIZE: %d\n",data_size);
+  if(PROBABILITY_BCC1)
+    generateErrorBCC1(information_frame.raw_bytes);
+  if(PROBABILITY_BCC2)
+    generateErrorBCC2(information_frame.raw_bytes,data_size);
+  
+  if(DELAY>0)
+    generateDelay();
+  
   /* UNSTUFFING BYTES */
   int j = 0, p = 0, n=0;
   for (; j < i && p < i; j++) {

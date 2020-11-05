@@ -63,11 +63,6 @@ void printProgressBar(int progress, int total);
 void print_message(information_frame_t* frame, int coded);
 
 /**
- * @brief Takes fd and checks if it hasn't closed
- */
-int check_connection(int fd);
-
-/**
  * @brief takes an array with length size, and converts it to an 8byte number
  * 
  * array[0] = MSB ; array[size - 1] = LSB
@@ -82,6 +77,22 @@ unsigned long array_to_number(unsigned char* buffer, unsigned int size);
  */
 unsigned int number_to_array(unsigned long num, unsigned char* buffer);
 
+/**
+ * @brief Method to generate error in BCC2
+ *
+ */
+void generateErrorBCC2(unsigned char *frame, int frameSize);
+
+/**
+ * @brief Method to generate error in BCC1
+ *
+ */
+void generateErrorBCC1(unsigned char *checkBuffer);
+
+/**
+ * @brief Method to generate delay in processing of received frame
+ */
+void generateDelay();
 /**
  * @brief Method to generate a control packet (START or STOP)
  * @return control_packet_t structure

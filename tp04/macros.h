@@ -57,10 +57,15 @@
 #define FILE_NAME       0x1
 #define PACKET_SIZE     1024 /**< @brief Maximum packet size in bytes */
 
-
+// Progress Bar Macros
 #define PROGRESS_BAR_SIZE   30
 #define SEPARATOR_CHAR      '#'
 #define EMPTY_CHAR          '.'
 #define NUM_BACKSPACES      PROGRESS_BAR_SIZE + 9
+
+// Error generating Macros
+#define PROBABILITY_BCC1    0
+#define PROBABILITY_BCC2    0
+#define DELAY               0
 
 /** @} */

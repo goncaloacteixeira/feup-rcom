@@ -168,15 +168,7 @@ void print_elapsed_time(struct timespec start) {
   clock_gettime(CLOCK_MONOTONIC_RAW, &end);
   double delta = (end.tv_sec - start.tv_sec) * 1000.0 +
                  (end.tv_nsec - start.tv_nsec) / 1000000.0;
-  printf("Elapsed time: %f s\n\n", delta);
-}
-
-int check_connection(int fd) {
-  if (fcntl(fd, F_GETFD) == -1) {
-    printf("Connection closed\n");
-    return -1;
-  }
-  return 0;
+  printf("Elapsed time: %f ms\n\n", delta);
 }
 
 unsigned long array_to_number(unsigned char* buffer, unsigned int size) {
@@ -202,6 +194,32 @@ unsigned int number_to_array(unsigned long num, unsigned char* buffer) {
   }
 
   return size;
+}
+
+void generateErrorBCC2(unsigned char *frame, int frameSize){
+  int prob = (rand() % 100) + 1;
+
+  if (prob <= PROBABILITY_BCC2){
+    int i = (rand() % (frameSize - 5)) + 4; /* only considering data and BCC2*/
+    unsigned char randomAscii = (unsigned char)((rand() % 177));
+    frame[i] = randomAscii;
+  }
+
+}
+
+void generateErrorBCC1(unsigned char *frame){
+  int prob = (rand() % 100) + 1;
+  if (prob <= PROBABILITY_BCC1)
+  {
+    int i = (rand() % 2);
+    unsigned char randomAscii = (unsigned char)((rand() % 177));
+    frame[i] = randomAscii;
+  }
+
+}
+
+void generateDelay() {
+  usleep(DELAY*1e6);
 }
 
 control_packet_t generate_control_packet(int control, file_t* file) {
