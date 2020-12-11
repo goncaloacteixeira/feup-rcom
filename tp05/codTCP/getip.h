@@ -6,4 +6,4 @@
 #include <netinet/in.h> 
 #include<arpa/inet.h>
 
-struct hostent *getIP(char host[]);
+char *getIP(char host[]);
