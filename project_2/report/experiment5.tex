@@ -1,0 +1,15 @@
+\addcontentsline{toc}{subsection}{Experiência 5 - DNS}
+\subsection*{Experiência 5 - DNS}
+O objetivo desta experiência é configurar um servidor de DNS para traduzir endereços URL em endereços IP.
+
+\subsubsection{1. Como configurar um serviço DNS num \emph{host}?}
+Para configurar o serviço DNS, é necessário alterar o ficheiro \verb+resolv.conf+ no \emph{host}. Esse ficheiro tem de conter as seguintes linhas:
+\begin{lstlisting}[language=bash]
+	search netlab.fe.up.pt
+	nameserver 172.16.1.1
+\end{lstlisting}
+
+Em que \verb+netlab.fe.up.pt+ é o nome do servidor DNS e \verb+172.16.1.1+ é o seu endereço IP. Após esta experiência é possível fazer \emph{ping} a \verb+google.com+ com sucesso e, portanto, aceder à Internet nos tux.
+
+\subsubsection{2. Que pacotes são trocados pelo DNS e que informações são transportadas?}
+São trocados pacotes de protocolo DNS, em que o \emph{host} pede ao servidor de DNS o IP associado ao nome que indicou, por exemplo \verb+ftp.up.pt+, e o servidor depois responde com o endereço IP associado. Pode ser consultada a figura \ref{fig:fig11} para referência. 

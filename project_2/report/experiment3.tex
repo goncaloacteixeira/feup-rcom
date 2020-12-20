@@ -1,0 +1,49 @@
+\addcontentsline{toc}{subsection}{Experiência 3 - Configurar um Router em Linux}
+\subsection*{Experiência 3 - Configurar um Router em Linux}
+O objetivo desta experiência é configurar um tux para servir de router e transmitir dados da uma vlan para outra.
+
+\subsubsection{1. Que rotas existem nos tux? Qual o seu significado?}
+\begin{table}[ht]
+\begin{center}
+ 	\begin{tabular}{|| c c c||} 
+ 		\hline
+ 		tux & vlan & gateway \\ [0.5ex] 
+ 		\hline\hline
+ 		2 & vlan0 172.16.y0.0 & 172.16.y1.253\\ 
+ 		\hline
+ 		2 & vlan1 172.16.y1.0 & 0.0.0.0\\ 
+ 		\hline\hline
+ 		3 & vlan0 172.16.y0.0 & 0.0.0.0\\ 
+ 		\hline
+ 		3 & vlan1 172.16.y1.0 & 172.16.y1.254\\ 
+ 		\hline\hline
+ 		4 & vlan0 172.16.y0.0 & 0.0.0.0\\ 
+ 		\hline
+ 		4 & vlan1 172.16.y1.0 & 0.0.0.0\\ [1ex] 
+ 		\hline
+	\end{tabular}
+	\caption{Rotas Existentes nos tux}
+	\label{tab:table3}
+\end{center}
+\end{table}
+
+O destino das rotas é até onde o tux que está na origem da rota consegue chegar.
+
+\subsubsection{2. Qual é a informação que uma entrada da tabela de \emph{forwarding} contém?}
+\textbf{\emph{Destination}}: o destino da rota;\\
+\textbf{\emph{Gateway}}: o IP do próximo ponto por onde passará a rota;\\
+\textbf{\emph{Netmask}}: usado para determinar o ID da rede a partir do endereço IP do destino;\\
+\textbf{\emph{Flags}}: informações sobre a rota;\\
+\textbf{\emph{Metric}}: o custo de cada rota;\\
+\textbf{\emph{Ref}}: número de referências para esta rota (não usado no kernel do Linux);\\
+\textbf{\emph{Use}}: contador de pesquisas pela rota, dependendo do uso de -F ou -C isto vai ser o número de falhas da cache (-F) ou o número de sucessos (-C);\\
+\textbf{\emph{Interface}}: qual a placa de rede responsável pela gateway (\emph{eth0}/\emph{eth1}).
+
+\subsubsection{3. Que mensagens ARP e endereços MAC associados são observados e porquê?}
+Tal como referido nos pontos 1 e 2 da experiência 1, quando um tux faz \emph{ping} para outro tux é preciso relacionar o IP do destino com um endereço MAC. Pode ser consultadas a figuras \ref{fig:fig7} (eth1 tux4) e \ref{fig:fig8} (eth0 tux4).
+
+\subsubsection{4. Que pacotes ICMP são observados e porquê?}
+São observados pacotes de pedido e resposta ICMP, uma vez que as rotas estão configuradas, caso contrário seriam enviados pacotes ICMP de \emph{Host Unreachable}. Pode ser consultada a figura \ref{fig:fig9} para referência.
+
+\subsubsection{5. Quais são os endereços IP e MAC associados a um pacote ICMP e porquê?}
+Os endereços IP e MAC associados com os pacotes ICMP são os endereços IP e MAC dos tux de origem e destino. Quando é feito \emph{ping} do tux3 para o tux4 os endereços de origem vão ser \verb+172.16.y0.1+ (IP) e \verb+00:21:5a:61:24:92+ (MAC) e o de destino \verb+172.16.y1.253+ (IP) e \verb+00:21:5a:5a:7d:74+ (MAC).
