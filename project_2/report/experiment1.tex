@@ -1,0 +1,56 @@
+\addcontentsline{toc}{subsection}{Experiência 1 - Configuração IP de Rede}
+\subsection*{Experiência 1 - Configuração IP de Rede}
+Explicar sucintamente o objetivo desta experiência.
+
+\subsubsection{1. O que são os pacotes ARP e para que são usados?}
+O ARP (\emph{Address Resolution Protocol}) é um protocolo de comunicação que serve para descobrir o endereço da camada de ligação associado ao endereço IP numa LAN (\emph{Local Area Network}). O endereço da camada de ligação é também conhecido por Endereço MAC (\emph{Media Access Control}).
+
+\subsubsection{2. Quais são os endereços MAC e IP dos pacotes ARP e porquê?}
+Executando o comando \emph{ping} do tux3 para o tux4, o tux3 envia uma pergunta para saber qual é o endereço MAC associado ao IP do tux4. A "pergunta" é feita através de um pacote ARP que contém o endereço IP e MAC do tux3 (\verb+172.16.30.1+ e \verb+00:21:5a:5a:7d:74+) e o endereço IP do tux4 (\verb+172.16.1.254+), uma vez que se quer descobrir o endereço MAC do tux4, o campo dedicado a esse efeito está a \verb+00:00:00:00:00:00+. De seguida é enviada uma resposta, também sob a forma de um pacote ARP, do tux4 para o tux3, indicando o seu endereço MAC (\verb+00:21:5a:5a:7d:74+). Figura \ref{fig:fig1}
+
+\subsubsection{3. Quais os pacotes gerados pelo comando ping?}
+Primeiro o comando \emph{ping} gera pacotes ARP para fazer a relação entre endereços IP e MAC, de seguida gera pacotes ICMP (\emph{Internet Control Message Protocol}).
+
+\subsubsection{4. Quais são os endereços MAC e IP dos pacotes ping?}
+Quando se executa o comando \emph{ping} no tux3 para o tux4, os endereços (IP e MAC) vão ser os endereços dos tux. Podemos ver de seguida os endereços registados nos pacotes de pedido e reposta, respetivamente.
+
+\begin{table}[ht]
+\begin{center}
+ 	\begin{tabular}{|| c | c c c||} 
+ 		\hline
+ 		& tux & MAC & IP \\ [0.5ex] 
+ 		\hline\hline
+ 		Origem & 3 & 00:21:5a:61:24:92 & 172.16.30.1 \\ 
+ 		\hline
+ 		Destino & 4 & 00:21:5a:5a:7d:74 & 172.16.30.254 \\ [1ex] 
+ 		\hline
+	\end{tabular}
+	\caption{Pacote de Pedido}
+	\label{tab:table1}
+\end{center}
+\end{table}
+
+\begin{table}[ht]
+\begin{center}
+ 	\begin{tabular}{|| c | c c c||} 
+ 		\hline
+ 		& tux & MAC & IP \\ [0.5ex] 
+ 		\hline\hline
+ 		Origem & 4 & 00:21:5a:5a:7d:74 & 172.16.30.254 \\ 
+ 		\hline
+ 		Destino & 3 & 00:21:5a:61:24:92 & 172.16.30.1 \\ [1ex] 
+ 		\hline
+	\end{tabular}
+	\caption{Pacote de Resposta}
+	\label{tab:table2}
+\end{center}
+\end{table}
+
+Devem-se consultar as figuras \ref{fig:fig2} e \ref{fig:fig3} para referência.
+
+\subsubsection{5. Como determinar a trama recetora Ethernet é ARP, IP, ICMP?}
+O \emph{Ethernet Header} de um pacote contém a informação acerca do tipo da trama. Para as tramas IP, o valor do tipo será \verb+0x0800+, se o \emph{IP Header} tiver o valor 1 então o tipo de protocolo é ICMP. Para as tramas ARP o valor do tipo será \verb+0x0806+.\\
+Para referência devem-se consultar as figuras \ref{fig:fig4} e \ref{fig:fig5}.
+
+\subsubsection{6. Como determinar o comprimento de uma trama recetora?}
+O  comprimento  de  uma  trama recetora pode ser determinado inspecionando a entrada no registo do \emph{Wireshark}, tal como se pode observar na figura \ref{fig:fig6}.

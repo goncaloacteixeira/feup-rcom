@@ -1,4 +1,5 @@
 #pragma once
+
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -23,12 +24,11 @@
 #define FILE_READY 226
 
 
-
-int socket_connection(char * ip, int port);
+int socket_connection(char *ip, int port);
 
 int socket_exit();
 
-int ftp_init_connection(char * ip);
+int ftp_init_connection(char *ip);
 
 int ftp_read_socket(int sockfd);
 
@@ -36,12 +36,12 @@ int ftp_write_socket(int sockfd, char *msg);
 
 int ftp_enter_pasv(int sockfd, char *ip, int *port);
 
-int ftp_login(char * username, char* password);
+int ftp_login(char *username, char *password);
 
-int ftp_passive(char * ip, int* port);
+int ftp_passive(char *ip, int *port);
 
-int ftp_retrieve(char * url_path);
+int ftp_retrieve(char *url_path);
 
-int ftp_get_file(char * url_path);
+int ftp_get_file(char *url_path);
 
-int ftp_download(char * url_path);
+int ftp_download(char *url_path);
