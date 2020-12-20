@@ -1,0 +1,20 @@
+\addcontentsline{toc}{subsection}{Experiência 2 - Implementar duas LANs Virtuais no Switch}
+\subsection*{Experiência 2 - Implementar duas LANs Virtuais no Switch}
+Explicar sucintamente o objetivo desta experiência.
+
+\subsubsection{1. Como configurar a VLANy0?}
+Primeiro é necessário ligar um cabo série do tux3 ao switch para aceder ao terminal de configuração (\emph{configure terminal}) do switch. De seguida cria-se uma vlan, de ID y0, no caso, 31. Por fim resta atribuir as portas em questão a essa vlan que acabou de ser criada.
+\begin{lstlisting}[language=bash]
+configure terminal
+> vlan y0
+> end
+> configure terminal
+> interface fastethernet 0/[n da porta]
+> switchport mode access
+> switchport access vlan y0
+> end
+
+\end{lstlisting}
+
+\subsubsection{2. Quantos domínios de broadcast existem? O que se pode concluir a partir dos registos?}
+O tux3 recebe resposta do tux4 quando faz \emph{ping boradcast}, mas não recebe do tux2. O tux2 não recebe nenhuma resposta quando executa a instrução de \emph{ping broadcast}. Desta forma pode-se concluir que existem dois domínios de broadcast, um que contem o tux3 e tux4, e outro que contém o tux2.
