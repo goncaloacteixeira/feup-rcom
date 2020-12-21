@@ -6,7 +6,7 @@ um link do tipo ftp://[<user>:<password>@]<host>/<url-path> (tal como descrito e
 \addcontentsline{toc}{subsection}{Arquitetura}
 \subsection*{Arquitetura}
 Numa fase inicial é feito o \textit{parsing} do link passado como argumento.
-A função \textit{parseArg} recolhe os devidos campos (\textit{user},\textit{password},\textit{host} e \textit{url\char`_path}), e guarda nas variáveis com o mesmo nome.
+A função \textit{parseArg} recolhe os devidos campos (\textit{user}, \textit{password}, \textit{host} e \textit{url\char`_path}), e guarda nas variáveis com o mesmo nome.
 No caso dos campos \textit{user} e \textit{password} não estarem presentes no link, serão dados os valores de \textit{anonymous} e \textit{1234}, respetivamente.
 
 De seguida, através de código já fornecido pelos docentes, é obtido o \textit{IP address}, usando a função \textit{getIP(host)}.
@@ -23,4 +23,4 @@ Assim, após a conexão inicial:
 \addcontentsline{toc}{subsection}{Resultados}
 \subsection*{Resultados}
 A nossa aplicação foi testada com: modo anónimo, modo autenticado, diferentes tipos de ficheiro, diferentes tamanhos de ficheiros. Em todos os casos, foi bem sucedida.
-Durante a execução do programa são apresentadas as informações iniciais (\textit{user},\textit{password},\textit{host}, \textit{$url_path$} e \textit{IP}) e as respostas do servidor, de modo a proporcionar ao utilizador o estado do download. 
+Durante a execução do programa são apresentadas as informações iniciais (\textit{user},\textit{password},\textit{host}, \textit{url\char`_path} e \textit{IP}) e as respostas do servidor, de modo a proporcionar ao utilizador o estado do download. 
