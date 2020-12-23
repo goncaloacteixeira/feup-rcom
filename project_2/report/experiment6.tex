@@ -6,7 +6,7 @@ O objetivo desta experiência é analisar como funcionam as ligações TCP e ins
 A aplicação abriu duas ligações TCP, uma para enviar comandos e receber respostas do servidor e 
 uma outra para receber dados do servidor e enviar as repostas do cliente.
 
-\subsubsection{2. Em que ligação é transportado a informação de controlo?}
+\subsubsection{2. Em que ligação é transportada a informação de controlo?}
 A informação de controlo é transportada na ligação de troca de comandos, ou seja, na primeira referida no ponto anterior.
 
 \subsubsection{3. Quais são as fases de uma ligação TCP?}
@@ -18,7 +18,7 @@ Os campos relevantes para o efeito são os \emph{acknowledgement numbers}, que i
 
 \subsubsection{5. Como é que o mecanismo de controlo de congestão TCP funciona? Como é que o fluxo de dados da conexão evoluiu ao longo do tempo? Está de acordo com o mecanismo de controlo de congestão TCP?}
 O mecanismo de controlo de congestão é feito quando o TCP mantém uma janela de congestão que consiste numa estimativa do número de octetos que a rede consegue encaminhar, não enviando mais octetos do que o mínimo da janela definida pelo recetor e pela janela de congestão.\\
-Ao iniciar a transferência no tux3 registou-se uma subida acentuada no gráfico de fluxo (taxa de transferência), e perto dos 4 segundos, registamos uma descida acentuada da curva do gráfico, seguida de uma estabilização, até terminar. Podemos concluir que ao iniciar a transferência no tux2, a taxa de transferência diminui, o que faz sentido uma vez que o fluxo de dados de ligação está de acordo com o mecanismo de controlo de congestão pois quando a rede estava mais congestionada tinha um bitrate menor. O referido gráfico pode ser consultado na figura \ref{fig:fig12}.
+Ao iniciar a transferência no tux3 registou-se uma subida acentuada no gráfico de fluxo (taxa de transferência), e perto dos 4 segundos, registamos uma descida acentuada da curva do gráfico, seguida de uma estabilização, até terminar. Podemos concluir que ao iniciar a transferência no tux2, a taxa de transferência diminui, o que faz sentido uma vez que o fluxo de dados de ligação está de acordo com o mecanismo de controlo de congestão pois quando a rede estava mais congestionada tinha um bitrate menor. O gráfico em questão pode ser consultado na figura \ref{fig:fig12}.
 
-\subsubsection{6. De que forma é afetada a conexão de dados TCP pelo aparecimento de uma segunda conexão TCP? Como?}
-Com o aparecimento de uma segunda conexão TCP, a existência de uma transferência de dados em simultâneo pode levar a uma queda na taxa de transmissão, uma vez que a taxa de transferência é distribuída de igualmente. Esta informação pode ser verificada novamente através da figura \ref{fig:fig12}.
+\subsubsection{6. De que forma é afetada a ligação de dados TCP pelo aparecimento de uma segunda ligação TCP? Como?}
+Com o aparecimento de uma segunda ligação TCP, a existência de uma transferência de dados em simultâneo pode levar a uma queda na taxa de transmissão, uma vez que a taxa de transferência é distribuída de igualmente. Esta informação pode ser verificada novamente através da figura \ref{fig:fig12}.
