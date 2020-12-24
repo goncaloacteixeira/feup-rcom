@@ -1,0 +1,25 @@
+\addcontentsline{toc}{subsection}{Experiência 4 - Configurar um Router comercial e implementar o NAT}
+\subsection*{Experiência 4 - Configurar um Router comercial e implementar o NAT}
+O objetivo desta experiência é configurar um Router comercial e configurar o serviço NAT para acesso à Internet.
+
+\subsubsection{1. Como se configura um Router estático num Router comercial?}
+Para configurar o Router é necessário ligar um cabo série do tux ao router, depois executam-se os seguintes comandos no \emph{GTKTerm} (router):
+
+\begin{lstlisting}[language=bash]
+	configure terminal
+	> ip route [destino] [mascara] [gateway]
+	> exit
+\end{lstlisting}
+
+\subsubsection{2. Quais são as rotas seguidas pelos pacotes durante a experiência? Explique.}
+No caso de a rota existir, os pacotes utilizam essa rota, caso contrário, os pacotes passam pela rota default (router), são informados que o tux4 existe, e deverão ser enviados pelo mesmo.
+
+\subsubsection{3. Como se configura o NAT num Router comercial?}
+Para configurar o router, foi necessário configurar a interface interna no processo de NAT, o que foi feito recorrendo ao guião fornecido. Ligando ao router através da porta série, utilizamos os seguintes comandos que podem ser consultados em anexo, figura \ref{fig:fig10}.
+
+\subsubsection{4. O que faz o NAT?}
+O \emph{Network Address Translation} NAT foi concebido para a preservação de endereços IP. Permite que as redes IP privadas que usem endereços IP não registados a possibilidade de se ligarem à Internet. O NAT opera num router, normalmente ligando duas redes, e traduz os endereços da rede privada (que não são únicos à escala global) em endereços válidos, antes que os pacotes sejam transmitidos para outra rede.
+Adicionalmente, o NAT pode ser configurado para mostrar apenas um endereço correspondente à rede privada inteira para a rede exterior. Isto transmite segurança adicional uma vez que esconde de forma eficaz os endereços da rede que está por detrás daquele endereço público. Adicionalmente, o NAT oferece também funções de segurança e é implementado em
+ambientes de acesso remoto.\\
+Resumidamente, o NAT permite que os computadores de uma rede interna tenham acesso ao exterior, sendo que, um único endereço IP é exigido para representar um grupo de computadores fora da sua própria rede. 
+

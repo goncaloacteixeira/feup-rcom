@@ -1,0 +1,26 @@
+\addcontentsline{toc}{section}{Parte I - Aplicação Download}
+\section*{Parte I - Aplicação Download}
+A primeira parte deste segundo trabalho foi o desenvolvimento de uma aplicação de download, que requer
+um link do tipo \verb+ftp://[<user>:<password>@]<host>/<url-path>+ (tal como descrito em RFC1738), através de um servidor FTP.
+
+\addcontentsline{toc}{subsection}{Arquitetura}
+\subsection*{Arquitetura}
+Numa fase inicial é feito o \textit{parsing} do link passado como argumento.
+A função \textit{parseArg} recolhe os devidos campos (\textit{user}, \textit{password}, \textit{host} e \textit{url\char`_path}), e guarda nas variáveis com o mesmo nome.
+No caso dos campos \textit{user} e \textit{password} não estarem presentes no link, serão dados os valores de \textit{anonymous} e \textit{1234}, respetivamente.
+
+De seguida, através de código já fornecido pelos docentes, é obtido o \textit{IP address}, usando a função \textit{getIP(host)}.
+
+Após estes passos, é iniciada a conexão entre o cliente e o servidor, através da abertura de um \textit{socket} (\textit{socket\char`_connection}, adaptado do código disponibilizado pelos docentes).
+É necessário referir que a partir desta conexão, a comunicação entre cliente-servidor é muito semelhante para os diferentes comandos enviados: é feita com base no envio de pedidos (\textit{ftp\char`_write\char`_socket}, retorna 0 se o envio foi bem sucedido, -1 em contrário) e leitura de respostas (\textit{ftp\char`_read\char`_socket}, retorna o código de resposta do servidor). Como tal, quando for referido o envio de um comando, na realidade está-se a querer dizer o envio de um pedido e receção da resposta consequente.
+Assim, após a conexão inicial:
+\begin{itemize}
+\item É verificado se a conexão foi estabelecida(\textit{ftp\char`_init\char`_connection});
+\item São enviados os comandos \textbf{USER user}, \textbf{PASS password}, \textbf{TYPE I} de modo a fazer o login (\textit{ftp\char`_login});
+\item É enviado o comando \textbf{PASV}, de modo a entrar no modo passivo (\textit{ftp\char`_passive});
+\item É aberto um novo \textit{socket}, para troca de dados, é enviado o comando \textbf{RETR url\char`_path} (\textit{ftp\char`_retrieve}), de modo a fazer o pedido do ficheiro, é feito o download do ficheiro (\textit{ftp\char`_get\char`_file}) e são fechados os \textit{sockets} de dados e de comandos (\textit{socket\char`_exit}), terminando a aplicação (\textit{ftp\char`_download}).
+\end{itemize}
+\addcontentsline{toc}{subsection}{Resultados}
+\subsection*{Resultados}
+A nossa aplicação foi testada com: modo anónimo, modo autenticado, diferentes tipos de ficheiro e diferentes tamanhos de ficheiros. Sendo em todos os cenários bem sucedida.
+Durante a execução do programa são apresentadas as informações iniciais (\textit{user},\textit{password},\textit{host}, \textit{url\char`_path} e \textit{IP}) e as respostas do servidor, de modo a proporcionar ao utilizador o estado do download. 
